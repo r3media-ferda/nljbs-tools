@@ -1,0 +1,40 @@
+# nljbs-tools
+
+CLI for the NLJBS Shop Talk weekly production run. Full spec: `docs/NLJBS_CLAUDE_CODE_HANDOFF.md` (read it before changing behavior).
+
+## Run
+
+```bash
+cd ~/Code/nljbs-tools
+.venv/bin/nljbs probe "/Volumes/NLJBS Drive/WORKING SHOP TALM FILES/<date>/RECORDING N"
+.venv/bin/nljbs sync ~/nljbs-work/<date>_RECORDINGN/episode.yaml            # build + verify locally
+.venv/bin/nljbs sync ~/nljbs-work/<date>_RECORDINGN/episode.yaml --deliver  # also copy XML to the recording folder
+```
+
+Python 3.14 venv in `.venv`. ffmpeg/ffprobe come from the `static-ffmpeg` package (no Homebrew on this Mac).
+Work files (audio caches, frames, reports, draft XML) live in `~/nljbs-work/<date>_<recording>/`, never on the drive.
+
+## Hard rules
+
+- Never overwrite anything on `/Volumes/NLJBS Drive`. New filenames only; superseded files go to `_to_delete/` for Avery to delete.
+- Render to `~/nljbs-work`, then copy to the drive and verify (md5 / byte compare).
+- Heavy ffmpeg jobs run one at a time in the foreground.
+- Never name a module `xml.py`.
+- Artist handles come from the screen (OBS IG header) or transcript, never from memory.
+- Public text (titles, captions, descriptions) in NLJBS voice: casual, shop-floor. Never the word "swag".
+- Publishing is outward-facing: dry run first, Avery confirms before any real upload.
+
+## XML (xmeml v4) invariants
+
+29.97 NTSC everywhere (`timebase 30`, `ntsc TRUE`); clipitem `<name>` = source file name for cameras/OBS; `pathurl` as `file://localhost` + percent-encoded path (`%20`, `%23`); mics on mono tracks; camera scratch audio disabled; AVE on V1; no pproTicks in generated clips.
+
+## Layout
+
+- `nljbs/media.py` ffprobe/ffmpeg helpers, audio cache
+- `nljbs/probe.py` folder inventory, flags, draft `episode.yaml`, contact sheet
+- `nljbs/sync.py` envelope sync (coarse 10 ms / fine 1 ms / drift 0.5 ms), xmeml writer, re-measure from written XML
+- `legacy/` read-only copies of the R77-R80 scripts from the drive (several hard-code old VM paths under `/mnt/user-data/uploads`)
+
+## Validation
+
+R80 AVE14202: hand-built offset -40.9585 s, `measure()` gives -40.9561 s mid-run, drift 9.6 ms. Re-run this when changing `sync.py`.
