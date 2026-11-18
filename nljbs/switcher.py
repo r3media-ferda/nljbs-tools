@@ -699,13 +699,15 @@ def run(edit_yaml, deliver=False, variant=None):
     aud = ET.SubElement(med, "audio"); ET.SubElement(aud, "numOutputChannels").text = "2"
     af = ET.SubElement(ET.SubElement(aud, "format"), "samplecharacteristics")
     ET.SubElement(af, "depth").text = "16"; ET.SubElement(af, "samplerate").text = "48000"
+    # Plain <track> elements with no Premiere type attributes: the proven R80 build80 layout (Avery had audio).
+    # R81 v2 lesson: premiereTrackType="Mono" made Premiere drop all three mic tracks on import. Premiere's own
+    # exports use "Stereo" + alternating outputchannelindex for exploded pairs; don't hand-copy that onto mics.
     NA = len(seqT.findall("media/audio/track"))
     segs_audio = [(Tt["ga"], Tt["gb"], Tt["start"]) for Tt in TR] + KEPT
     for ti in range(max(NA, len(MICS))):
         tr = ET.SubElement(aud, "track")
         if ti < len(MICS):
             k, nm = MICS[ti]
-            tr.set("premiereTrackType", "Mono")
             for n_, (a, b, ts) in enumerate(segs_audio):
                 L_ = b - a; i0 = B0f + a
                 c = ET.SubElement(tr, "clipitem", id=f"r{rel}-mic{ti + 1}-{n_}", premiereChannelType="mono")

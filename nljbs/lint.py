@@ -83,6 +83,11 @@ def run(path):
 
     music = Counter()
     for i, t in enumerate(main.findall("media/audio/track")):
+        # R81 v2: Premiere silently dropped every track marked premiereTrackType="Mono" on import
+        if t.get("premiereTrackType") == "Mono":
+            errs.append(f"A{i + 1}: premiereTrackType=\"Mono\" - Premiere drops this track on import")
+        if t.findall("clipitem") and t.find("outputchannelindex") is None and main.find("media/audio/outputs") is not None:
+            warns.append(f"A{i + 1}: no outputchannelindex")
         for c in t.findall("clipitem"):
             nm = c.findtext("name") or ""
             if nm.upper().startswith("MIC") and c.get("premiereChannelType") not in (None, "mono"):
