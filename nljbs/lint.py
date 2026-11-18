@@ -38,9 +38,31 @@ def run(path):
                 msg = f"clip {nm}: pproTicks disagree with in/out ({c.get('id')})"
                 # Premiere-made graphics (time-remapped Essential Graphics) legitimately do this
                 (warns if nm == "Graphic" else errs).append(msg)
-        for flt in c.findall("filter"):
-            if flt.findtext("effect/effectid") == "Lumetri":
-                warns.append(f"clip {nm}: Lumetri in the XML (LUTs belong on source master clips)")
+
+    # ---- color safety: one master clip per source file, and color either everywhere or nowhere.
+    # Two master clips for one camera = a master-clip LUT lands on one and not the other (R80 color jumps).
+    # Lumetri on some instances of a camera but not others = mismatched or doubled grade between angles.
+    by_path = defaultdict(lambda: {"mc": set(), "fid": set(), "names": set(), "lum": 0, "n": 0})
+    fid_path = {fid: (f.findtext("pathurl") or "") for fid, f in files.items()}
+    for c in root.iter("clipitem"):
+        fe = c.find("file")
+        if fe is None or fe.get("id") not in fid_path: continue
+        p = fid_path[fe.get("id")]
+        if not CAM_RE.match(p.rsplit("/", 1)[-1].replace("%20", " ")): continue
+        d = by_path[p]
+        d["mc"].add(c.findtext("masterclipid")); d["fid"].add(fe.get("id")); d["names"].add(c.findtext("name")); d["n"] += 1
+        if any(fl.findtext("effect/effectid") == "Lumetri" for fl in c.findall("filter")): d["lum"] += 1
+    for p, d in by_path.items():
+        fn = p.rsplit("/", 1)[-1].replace("%20", " ")
+        if len(d["mc"]) > 1 or len(d["fid"]) > 1 or len(d["names"]) > 1:
+            errs.append(f"{fn}: {len(d['mc'])} master clips / {len(d['fid'])} file ids / names {sorted(d['names'])} "
+                        "- a master-clip LUT would not reach every angle")
+        if 0 < d["lum"] < d["n"]:
+            errs.append(f"{fn}: Lumetri on {d['lum']} of {d['n']} uses - color will differ between angles")
+        elif d["lum"] and d["n"] > 1:
+            warns.append(f"{fn}: Lumetri on every use - adding a master-clip LUT on top would double the grade")
+    cams = {p.rsplit('/', 1)[-1].replace('%20', ' '): d['n'] for p, d in by_path.items()}
+    print("camera master clips:", ", ".join(f"{k} x{v}" for k, v in sorted(cams.items())))
 
     for f in files.values():
         p = f.findtext("pathurl") or ""

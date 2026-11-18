@@ -35,7 +35,15 @@ def main():
     gr.add_argument("--deliver", action="store_true", help="copy graded files to the recording folder")
     gr.add_argument("--only", nargs="*", help="camera stems to do (default all)")
 
+    lu = sub.add_parser("luts", help="one finished .cube per camera (LUT + finish combined)")
+    lu.add_argument("edit")
+    lu.add_argument("--deliver", help="folder to copy the .cube files into (never overwrites)")
+
     a = ap.parse_args()
+    if a.cmd == "luts":
+        from . import luts
+        luts.run(a.edit, deliver_dir=a.deliver)
+        return
     if a.cmd == "grade":
         from . import grade
         grade.run(a.edit, deliver=a.deliver, only=a.only)

@@ -26,7 +26,9 @@ def params(c):
     return P
 
 
-def run(xml_path, times, outdir, remap=None, tag="chk"):
+def run(xml_path, times, outdir, remap=None, tag="chk", luts=None, force_angle=None):
+    """luts: {file name: ffmpeg filter} applied to every use of that file, like a master-clip effect.
+    force_angle: '1'..'10' renders that angle nest regardless of which one is enabled."""
     r = ET.parse(xml_path).getroot(); main = r.find("sequence")
     seqs = {s.get("id"): s for s in r.iter("sequence") if s.find("media") is not None}
     fpath = {}
@@ -44,7 +46,11 @@ def run(xml_path, times, outdir, remap=None, tag="chk"):
             if tr.findtext("enabled") != "TRUE": continue
             items = [c for c in tr if c.tag in ("clipitem", "transitionitem", "generatoritem")]
             for j, c in enumerate(items):
-                if c.tag != "clipitem" or c.findtext("enabled") != "TRUE": continue
+                if c.tag != "clipitem": continue
+                nm = c.findtext("name") or ""
+                if force_angle and seq is main and nm.startswith("ANG "):
+                    if not nm.startswith(f"ANG {force_angle} "): continue
+                elif c.findtext("enabled") != "TRUE": continue
                 s, e = int(c.findtext("start")), int(c.findtext("end"))
                 # -1 = edge sits inside the neighbouring transition
                 if s == -1 and j > 0 and items[j - 1].tag == "transitionitem": s = int(items[j - 1].findtext("start"))
@@ -73,8 +79,10 @@ def run(xml_path, times, outdir, remap=None, tag="chk"):
             x0 = int(L["l"] / 100 * W); x1 = int(W - L["r"] / 100 * W); y0 = int(L["t"] / 100 * H); y1 = int(H - L["b"] / 100 * H)
             s = L["scale"] / 100; cw, ch = x1 - x0, y1 - y0
             ow, oh = max(2, int(cw * s) // 2 * 2), max(2, int(ch * s) // 2 * 2)
+            lut = (luts or {}).get(Path(L["path"]).name)
+            vf = (lut + "," if lut else "") + f"scale=1920:1080,crop={cw}:{ch}:{x0}:{y0},scale={ow}:{oh}"
             cmd = [media.FFMPEG, "-v", "error"] + ([] if st else ["-ss", f"{L['src_t']:.3f}"]) + \
-                  ["-i", L["path"], "-frames:v", "1", "-vf", f"scale=1920:1080,crop={cw}:{ch}:{x0}:{y0},scale={ow}:{oh}",
+                  ["-i", L["path"], "-frames:v", "1", "-vf", vf,
                    "-f", "rawvideo", "-pix_fmt", "rgba", "-"]
             raw = subprocess.run(cmd, capture_output=True).stdout
             if len(raw) < ow * oh * 4:

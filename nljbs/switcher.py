@@ -603,8 +603,8 @@ def run(edit_yaml, deliver=False, variant=None):
             cc = copy.deepcopy(c)
             if cc.get("id"): cc.set("id", f"r{rel}intro-" + cc.get("id"))
             for l in cc.findall("link"): cc.remove(l)
-            for f in cc.findall("filter"):               # no Lumetri carried over from old XMLs
-                if f.findtext("effect/effectid") == "Lumetri": cc.remove(f)
+            # Intro b-roll keeps Avery's own Lumetri from the template (single-use clips, not episode cameras).
+            # Episode cameras never get clip-level color: LUTs go on their source master clips in Premiere.
             fe = cc.find("file")
             if fe is not None:
                 fid = fe.get("id")
