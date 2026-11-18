@@ -16,7 +16,35 @@ def main():
     s.add_argument("--deliver", action="store_true",
                    help="copy the XML into the recording folder (new filename only, never overwrites)")
 
+    t = sub.add_parser("transcribe", help="Parakeet ASR on the mics -> words.json, transcript.txt, levels.npy")
+    t.add_argument("episode")
+
+    sc = sub.add_parser("screen", help="OBS screen states + IG image boxes -> screen.json")
+    sc.add_argument("episode")
+
+    sw = sub.add_parser("switcher", help="full auto edit from an episodes/R<NN>_edit.yaml -> _SWITCHER.xml")
+    sw.add_argument("edit")
+    sw.add_argument("--deliver", action="store_true", help="copy XML + plates to the recording folder (new names only)")
+
+    li = sub.add_parser("lint", help="check an xmeml against the Premiere invariants")
+    li.add_argument("xml")
+
     a = ap.parse_args()
+    if a.cmd == "lint":
+        from . import lint
+        raise SystemExit(0 if lint.run(a.xml) else 1)
+    if a.cmd == "switcher":
+        from . import switcher
+        switcher.run(a.edit, deliver=a.deliver)
+        return
+    if a.cmd == "screen":
+        from . import screen
+        screen.run(a.episode)
+        return
+    if a.cmd == "transcribe":
+        from . import transcribe
+        transcribe.run(a.episode)
+        return
     if a.cmd == "probe":
         from . import probe
         probe.run(a.folder, a.work)

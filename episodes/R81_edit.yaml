@@ -1,0 +1,73 @@
+# Shop Talk R81 (10.26.26 RECORDING 3): Porter (mic 1 / 093A), AC (mic 2 / AVE left), Jake (mic 3 / AVE right). No Nick.
+# All times are seconds on the mic timeline (GarageBand exports, t=0 = start of export).
+release: 81
+episode: ~/nljbs-work/10.26.26_RECORDING3/episode.yaml
+template: /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/10.26.26/RECORDING 2/ShopTalk_10-26-26_R80_MORECUTS_ONEMASTER.xml
+template_intro: [777, 1177]          # frames of the 400-frame intro package in the template
+template_ep: "ep:80"
+
+body: [83.85, 1090.95]               # "What's up, everybody?" .. "Thanks."  (pre-show + post-show dropped)
+outro: 1009.45                       # "I guess that's a good way to wrap it up" -> cameras only
+
+cast:
+  PORTER: {mic: 1, cam: 093A}
+  AC:     {mic: 2, cam: AVE}
+  JAKE:   {mic: 3, cam: AVE}
+
+# Angle geometry. tight = [x0, y0, scale]: fill the frame from a (1920/s x 1080/s) window at x0,y0.
+faces:                               # YuNet, R81 frames 200-1000 s
+  AVE:  {AC: [610, 330], JAKE: [1665, 483]}
+  093A: {PORTER: [910, 320]}
+  C:    {PORTER: [365, 385], AC: [935, 365], JAKE: [1515, 478]}
+subject:                             # split-box framing: [subject centre x, min source width]
+  AVE: [1140, 1500]
+  093A: [920, 900]
+  C: [940, 1500]
+tights:
+  AC: [62, 124, 1.75]
+  JAKE: [910, 243, 1.9]
+  PORTER: [162, 43, 1.3]             # Porter punch-in (angle 7, replaces the never-used PiP)
+
+# Cutting style (Avery R81: more cuts than R76-R80, but keep some air)
+gap_max: 0.9                         # word gaps longer than this get trimmed…
+gap_keep: 0.55                       # …down to this
+cuts:                                # extra content cuts [a, b]
+  - [476.85, 479.62]                 # "Yeah, sorry, I was with Lost."
+
+sections:
+  - {id: S1, a: 184.90, b: 476.85, handle: aaronriddletattoos, card: {run: 10, avatar: [1209, 110, 1498, 184]}}
+  - {id: S2, a: 479.62, b: 703.30, handle: timothyhoyer, card: {typed: true}}      # post is billlynch3180's repost; credit the artist
+  - {id: S3, a: 703.30, b: 1009.45, handle: juan_teyer, card: {run: 56, avatar: [1209, 70, 1444, 144]}}
+hold_runs: [0, 12, 18, 19, 36, 37, 38, 41, 43, 44, 46, 47]   # grids / profile pages / flyer -> hold the last good post
+tattoo_only:                         # the only tattoo-only beats in the body: Jake asks to zoom in
+  - [245.00, 248.10]
+  - [764.30, 767.20]
+
+trailer:                             # [a, b, angle, card]  angles 1-10 as in the nests
+  - [192.45, 198.05, 5, aaronriddletattoos]   # Porter: "This is a bionic fucking cat that is ripping holes in faces."
+  - [806.90, 807.82, 5, juan_teyer]           # Porter: "This is as good as it gets."
+  - [907.65, 908.95, 10, null]                # Jake: "Nobody can top that."
+  - [273.15, 277.30, 4, aaronriddletattoos]   # AC: "It's like a momma cat and grime had a baby."
+  - [507.80, 510.95, 6, timothyhoyer]         # "I remember seeing this stuff." / "26, 27 years ago."
+  - [582.55, 586.75, 4, timothyhoyer]         # Jake/AC: "obviously a dude who's ahead of his time. But way ahead of his time."
+  - [881.55, 884.05, 6, juan_teyer]           # Jake: "you'll never get out of talking about that tattoo."
+  - [921.55, 923.35, 9, null]                 # AC: "that's the one that makes everybody want to…" -> intro
+
+shoutouts:                           # template graphic name -> [a, b]
+  Porter_electric: [1024.55, 1029.40]
+  "@jake_hock": [1067.10, 1069.80]
+  "@NOLIESJUSTBULLSHIT": [1074.50, 1077.40]
+  "@ALLEYCATTATTOO": [1078.20, 1081.20]
+  "@aeconner": [1082.80, 1086.10]
+
+images:                              # placeholder slots for Avery's images: [a, dur, side, label]
+  - [116.30, 3.5, right, "Knockoff bags packed in a sedan trunk (the Chinatown dude)"]
+  - [148.60, 3.2, right, "Prada / Gucci / Chanel"]
+  - [455.80, 4.0, right, "Timothy Hoyer's Reaper painted head (Painted Noggins)"]
+  - [541.30, 5.0, right, "Timothy Hoyer devil-in-hell rib panel with the pitchfork"]
+  - [657.40, 4.0, right, "Electromagnetic party - Tim and Timothy"]
+  - [726.20, 4.0, right, "@mendozaartwork reference piece"]
+  - [823.60, 5.0, right, "Mark Maggiori cowboy painting (no eyes)"]
+  - [910.00, 4.0, left, "Valerie Vargas - the church with all the faces"]
+  - [1020.00, 3.0, right, "Alley Cat Tattoo - 220 Reservoir Street"]
+  - [1054.10, 3.2, right, "Jake's station - second from the end on the left"]

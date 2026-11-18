@@ -33,6 +33,13 @@ Work files (audio caches, frames, reports, draft XML) live in `~/nljbs-work/<dat
 - `nljbs/media.py` ffprobe/ffmpeg helpers, audio cache
 - `nljbs/probe.py` folder inventory, flags, draft `episode.yaml`, contact sheet
 - `nljbs/sync.py` envelope sync (coarse 10 ms / fine 1 ms / drift 0.5 ms), xmeml writer, re-measure from written XML
+- `nljbs/transcribe.py` Parakeet (sherpa-onnx, model in `~/nljbs-work/models/`) -> `words.json`, `transcript.txt`, `levels.npy`
+- `nljbs/screen.py` OBS stable screen states + IG image boxes (letterbox-trimmed) -> `screen.json`, review sheets
+- `nljbs/switcher.py` full auto edit from `episodes/R<NN>_edit.yaml` (sections, handles, cold open, cuts, image slots) using the last finished edit as template
+- `nljbs/lint.py` xmeml invariant checks; `nljbs/render_check.py` composites frames from any XML for a visual check
+- `episodes/` per-episode edit configs (times are mic-timeline seconds)
+
+Weekly order: `probe` -> `sync --deliver` -> `transcribe` -> `screen` -> write `episodes/R<NN>_edit.yaml` -> `switcher` -> render-check + `lint` -> `switcher --deliver`.
 - `legacy/` read-only copies of the R77-R80 scripts from the drive (several hard-code old VM paths under `/mnt/user-data/uploads`)
 
 ## Validation
