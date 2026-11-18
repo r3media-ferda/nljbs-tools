@@ -34,10 +34,22 @@ def classify(name):
     return None
 
 
-def last_release():
+def who_from_name(fname):
+    """'mic 1-porter.wav' / 'MIC 2 - AC.wav' -> 'Porter' / 'AC'. TODO when the name carries no person."""
+    m = re.match(r"^mic\s*\d+\s*-\s*(.+?)\.wav$", fname, re.I)
+    if not m:
+        return "TODO"
+    w = m.group(1).strip()
+    return w.upper() if len(w) <= 2 else w.title()
+
+
+def last_release(exclude=None):
+    """Highest release number on the drive, ignoring files inside `exclude` (the folder being probed)."""
     nums = []
     for p in SHOPTALK.rglob("*"):
         if p.name.startswith("._"):
+            continue
+        if exclude and Path(exclude) in p.parents:
             continue
         for m in re.finditer(r"(?:^|[_ ])R(\d{2,3})_|RELEASE (\d{2,3})\b", p.name, re.I):
             nums.append(int(m.group(1) or m.group(2)))
@@ -131,7 +143,7 @@ def run(folder, work=None):
         fc += f"xstack=inputs={n}:layout={layout}:fill=black" if n > 1 else "copy"
         subprocess.run([media.FFMPEG, "-v", "error", "-y", *ins, "-filter_complex", fc, str(sheet)], check=True)
 
-    last = last_release()
+    last = last_release(exclude=folder)
     rel = (last or 0) + 1
     rec_date = folder.parent.name  # MM.DD.YY
     episode = {
@@ -141,7 +153,7 @@ def run(folder, work=None):
         "recording_folder": str(folder),
         "work_dir": str(work),
         "mic_mode": mode,
-        "mics": [{"file": s["path"], "who": "TODO", "handle": "TODO"} for s in mics.values()],
+        "mics": [{"file": s["path"], "who": who_from_name(s["file"]), "handle": "TODO"} for s in mics.values()],
         "cameras": [
             {"file": s["path"], "kind": s["kind"], "who": "TODO"} for s in sources.values() if s["kind"] != "obs"
         ],

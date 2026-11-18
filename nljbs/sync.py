@@ -213,7 +213,8 @@ def run(episode_yaml, reference="mics", deliver=False):
         s = media.summarize(m["file"])
         a = s["audio"]
         mic_meta[key] = {"bits": int(a.get("bits") or 24), "sample_rate": a["sample_rate"], "channels": a["channels"]}
-        x = media.extract_audio(m["file"], cache, SR, channel=0, tag=key)
+        # cache tag carries the file name so raw takes and GarageBand exports never share a cache
+        x = media.extract_audio(m["file"], cache, SR, channel=0, tag=f"{key}_{Path(m['file']).stem.replace(' ', '_')}")
         peak = float(np.max(np.abs(x)))
         if peak > 0.99:
             print(f"  ! {key} peaks at {peak:.3f}: possible clipping")
