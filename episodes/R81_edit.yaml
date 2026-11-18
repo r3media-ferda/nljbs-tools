@@ -60,6 +60,19 @@ shoutouts:                           # template graphic name -> [a, b]
   "@ALLEYCATTATTOO": [1078.20, 1081.20]
   "@aeconner": [1082.80, 1086.10]
 
+grade:                               # baked color (nljbs grade) - picked from look sheets 2026-11-18
+  lut_root: /Volumes/NLJBS Drive/canon-lut-202510
+  use_graded: true                   # switcher points cameras at <stem>_GRADED.mp4
+  cameras:
+    AVE14203:
+      lut: BT709_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    093A6725:
+      lut: 3dlut/65grid-3dlut/full-to-full-range/CinemaGamut_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    C0013:                           # Sony, not log: levels matched to the Canons (p1/p99 40/160 -> 1/195)
+      filters: "colorlevels=rimin=0.157:gimin=0.157:bimin=0.157:rimax=0.627:gimax=0.627:bimax=0.627:romax=0.78:gomax=0.78:bomax=0.78,eq=saturation=1.4:gamma=1.0,colorbalance=rm=0.05:gm=-0.01:bm=-0.05"
+
 images:                              # placeholder slots for Avery's images: [a, dur, side, label]
   - [116.30, 3.5, right, "Knockoff bags packed in a sedan trunk (the Chinatown dude)"]
   - [148.60, 3.2, right, "Prada / Gucci / Chanel"]

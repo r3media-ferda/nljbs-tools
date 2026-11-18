@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 
 TK = 8475667200
-CAM_RE = re.compile(r"^(AVE\d+|093A\d+|C\d{4})\.MP4$|^\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}\.mp4$", re.I)
+CAM_RE = re.compile(r"^(AVE\d+|093A\d+|C\d{4})(_GRADED)?\.MP4$|^\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}\.mp4$", re.I)
 
 
 def run(path):

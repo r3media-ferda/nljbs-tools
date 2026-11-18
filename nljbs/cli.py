@@ -25,17 +25,27 @@ def main():
     sw = sub.add_parser("switcher", help="full auto edit from an episodes/R<NN>_edit.yaml -> _SWITCHER.xml")
     sw.add_argument("edit")
     sw.add_argument("--deliver", action="store_true", help="copy XML + plates to the recording folder (new names only)")
+    sw.add_argument("--variant", help="name suffix, e.g. GRADED -> ..._SWITCHER_GRADED.xml")
 
     li = sub.add_parser("lint", help="check an xmeml against the Premiere invariants")
     li.add_argument("xml")
 
+    gr = sub.add_parser("grade", help="bake LUT + grade into <stem>_GRADED.mp4 per camera")
+    gr.add_argument("edit")
+    gr.add_argument("--deliver", action="store_true", help="copy graded files to the recording folder")
+    gr.add_argument("--only", nargs="*", help="camera stems to do (default all)")
+
     a = ap.parse_args()
+    if a.cmd == "grade":
+        from . import grade
+        grade.run(a.edit, deliver=a.deliver, only=a.only)
+        return
     if a.cmd == "lint":
         from . import lint
         raise SystemExit(0 if lint.run(a.xml) else 1)
     if a.cmd == "switcher":
         from . import switcher
-        switcher.run(a.edit, deliver=a.deliver)
+        switcher.run(a.edit, deliver=a.deliver, variant=a.variant)
         return
     if a.cmd == "screen":
         from . import screen

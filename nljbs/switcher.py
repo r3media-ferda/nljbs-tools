@@ -198,12 +198,12 @@ def image_slot_png(out, label, side):
 
 
 # ---------------------------------------------------------------- main build
-def run(edit_yaml, deliver=False):
+def run(edit_yaml, deliver=False, variant=None):
     E = yaml.safe_load(Path(edit_yaml).read_text())
     ep = yaml.safe_load(Path(os.path.expanduser(E["episode"])).read_text())
     work = Path(ep["work_dir"]); rec = Path(ep["recording_folder"])
     rel = E["release"]; mm, dd, yy = ep["recording_date"].split(".")
-    name = f"ShopTalk_{mm}-{dd}-{yy}_R{rel}_SWITCHER"
+    name = f"ShopTalk_{mm}-{dd}-{yy}_R{rel}_SWITCHER" + (f"_{variant}" if variant else "")
     PL_NAME = f"R{rel}_PLATES"; plates = work / PL_NAME; (plates / "holds").mkdir(parents=True, exist_ok=True)
 
     # ---- sources and placed offsets (from the sync XML report)
@@ -214,12 +214,18 @@ def run(edit_yaml, deliver=False):
         k = {"ave": "AVE", "093a": "093A", "wide": "C"}[c["kind"]]
         SRC[k] = c["file"]
     SRC["OBS"] = ep["obs"][0]
+    graded = (E.get("grade") or {}).get("use_graded")
     for k, p in SRC.items():
         fn = Path(p).name; s = probe["sources"][fn]; v = s["video"]
-        OFF[k] = rep[fn]["xml_offset_s"]
+        OFF[k] = rep[fn]["xml_offset_s"]                  # offsets measured on the originals
         tb, ntsc = media.xml_rate(v["fps"])
         NATIVE[k] = (tb, "TRUE" if ntsc else "FALSE", int(round(s["duration"] * v["fps"])))
         FILES[k] = p
+        if graded and Path(p).stem in E["grade"]["cameras"]:
+            gp = Path(p).with_name(Path(p).stem + "_GRADED.mp4")   # same frames + rate as the original
+            if not gp.exists():
+                raise SystemExit(f"{gp.name} not on the drive yet: run `nljbs grade --deliver` first")
+            FILES[k] = str(gp)
     mic_dur = min(m["duration"] for m in probe["mics"].values())
     MICS = []
     for i, m in enumerate(ep["mics"], 1):
@@ -768,12 +774,19 @@ def deliver_files(xml_path, plates, rec):
     """Copy XML + plates folder to the recording folder. New names only; verify every file."""
     import filecmp, shutil
     dst_pl = rec / plates.name; dst_x = rec / xml_path.name
-    if dst_x.exists() or dst_pl.exists():
-        raise SystemExit(f"Not delivering: {dst_x.name} or {dst_pl.name} already exists on the drive (never overwrite).")
-    shutil.copytree(plates, dst_pl, ignore=shutil.ignore_patterns("_*"))
+    if dst_x.exists():
+        raise SystemExit(f"Not delivering: {dst_x.name} already exists on the drive (never overwrite).")
+    src_files = [p for p in plates.rglob("*") if p.is_file() and not p.name.startswith("_")]
+    clash = [p for p in src_files if (dst_pl / p.relative_to(plates)).exists()
+             and not filecmp.cmp(p, dst_pl / p.relative_to(plates), shallow=False)]
+    if clash:
+        raise SystemExit(f"Not delivering: plates differ from the ones on the drive: {[p.name for p in clash][:5]}")
+    for p in src_files:                                    # copy only what's missing; identical files are reused
+        d = dst_pl / p.relative_to(plates)
+        if not d.exists():
+            d.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(p, d)
     shutil.copy2(xml_path, dst_x)
-    bad = [p for p in plates.rglob("*") if p.is_file() and not p.name.startswith("_")
-           and not filecmp.cmp(p, dst_pl / p.relative_to(plates), shallow=False)]
+    bad = [p for p in src_files if not filecmp.cmp(p, dst_pl / p.relative_to(plates), shallow=False)]
     if bad or not filecmp.cmp(xml_path, dst_x, shallow=False):
         raise SystemExit(f"Copy verify FAILED: {bad}")
     print(f"Delivered: {dst_x}\n           {dst_pl}/ ({sum(1 for _ in dst_pl.rglob('*.png'))} png)")
