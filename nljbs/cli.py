@@ -39,7 +39,17 @@ def main():
     lu.add_argument("edit")
     lu.add_argument("--deliver", help="folder to copy the .cube files into (never overwrites)")
 
+    re_ = sub.add_parser("reels", help="R78 v3 reels from an episodes/R<NN>_reels.yaml")
+    re_.add_argument("reels")
+    re_.add_argument("ids", nargs="*", help="reel ids to build (default all)")
+    re_.add_argument("--deliver", action="store_true", help="copy R<NN>_REELS to the recording folder (new folder only)")
+    re_.add_argument("--verify-only", action="store_true")
+
     a = ap.parse_args()
+    if a.cmd == "reels":
+        from . import reels
+        reels.run(a.reels, a.ids, deliver=a.deliver, only_verify=a.verify_only)
+        return
     if a.cmd == "luts":
         from . import luts
         luts.run(a.edit, deliver_dir=a.deliver)

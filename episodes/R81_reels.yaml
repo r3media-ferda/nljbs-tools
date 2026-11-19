@@ -1,0 +1,146 @@
+# R81 reels - R78 v3 format (handoff section 10). ranges: [approx mic time, first word, approx mic time, last word]
+# First range = cold open on the punchline. clamp = OBS seconds the tattoo shots may come from.
+edit: episodes/R81_edit.yaml
+start_date: 2026-11-19            # first Short; one a day at 18:00 ET (R80 ran through 11-17)
+grade_boost: "eq=saturation=1.06:brightness=0.015"   # on top of the camera's SHOPTALK LUT: reels run warm + bright
+fix:                               # ASR -> caption text
+  transmogrifi: transmogrifier
+  array.: ""
+reels:
+  - id: "01"
+    slug: barbed-wire-chicken
+    kind: talk
+    title: Why'd she jump the barbed wire fence?
+    caption: "Pre-show at Alley Cat. Why was she jumping the barbed wire fence? Nobody knows, and AC's chicken joke went absolutely nowhere."
+    tags: [tattoo podcast, shop talk, nljbs, alley cat tattoo, tattoo shop]
+    red: [BARBED, WIRE, FENCE, BRUTAL, CHICKEN, TURKEY, ROAD, JOKES, FUCK, ANALYTICAL]
+    ranges:
+      - [50.5, Why, 52.5, "fence?"]
+      - [45.5, Why, 46.8, "fence?"]      # AC's setup at 26.8-32.5 is before the AVE camera rolled (mic 30.0)
+      - [47.1, Fuck, 49.0, out.]
+      - [50.5, Why, 52.5, "fence?"]
+      - [54.4, You, 55.8, "road?"]
+      - [56.5, Prove, 57.3, chicken.]
+      - [62.7, But, 64.3, road.]
+      - [65.2, Did, 66.3, "road?"]
+      - [71.8, "You're", 73.3, Pete.]
+      - [77.0, We, 78.5, jokes.]
+  - id: "02"
+    slug: knockoff-gucci
+    kind: talk
+    title: Knockoff Gucci out of a Chinatown trunk
+    caption: "The dude who drove down from Chinatown with a trunk full of knockoffs. Sold for $200, bought for $12."
+    tags: [tattoo podcast, tattoo shop stories, shop talk, nljbs, alley cat tattoo]
+    red: [CHINATOWN, TRUNK, KNOCKOFF, PRODUCTS, CRAZY, PRADA, GUCCI, CHANEL, "$200", "$12", EIGHT, EXACTLY]
+    ranges:
+      - [171.4, But, 172.5, "$12."]
+      - [106.0, Remember, 109.2, "Chinatown?"]
+      - [115.1, but, 118.3, products]
+      - [128.0, he, 132.7, everybody.]
+      - [133.3, And, 135.7, "up?"]
+      - [136.9, Fucking, 137.4, crazy.]
+      - [148.0, how, 151.2, was.]
+      - [164.0, So, 167.3, "$200."]
+      - [168.0, "Yeah,", 168.9, eight.]
+      - [171.4, But, 173.6, exactly.]
+  - id: "03"
+    slug: riddle-bionic-cat
+    kind: tattoo
+    handle: aaronriddletattoos
+    clamp: [183.0, 300.0]
+    pool: [[266.0, 288.0]]           # clean whole-post views (OBS s), no browser zoom
+    title: A bionic cat ripping holes in faces
+    caption: "Bionic cat by @aaronriddletattoos. Not huge, a ton going on in a little space, and that blue against the stippling."
+    tags: [aaron riddle, aaronriddletattoos, cat tattoo, color tattoo, shop talk, nljbs]
+    red: [BIONIC, CAT, RIPPING, HOLES, FACES, HEAVY, HITTER, AARON, RIDDLE, HOLY, MOLY, LAYERING, TEXTURES, SKULL, KITTY, MOMMA, GRIME, BABY]
+    ranges:
+      - [192.5, This, 197.7, faces.]
+      - [186.5, So, 188.1, hitter.]
+      - [190.9, Aaron, 191.2, Riddle.]
+      - [202.9, Holy, 203.3, moly.]
+      - [207.7, "Yeah,", 210.4, sure.]
+      - [220.7, "There's", 222.5, tricks.]
+      - [223.5, "Textures,", 227.9, kitty.]
+      - [273.2, "It's", 276.9, baby.]
+  - id: "04"
+    slug: riddle-transmogrifier
+    kind: tattoo
+    handle: aaronriddletattoos
+    clamp: [303.0, 426.0]
+    pool: [[303.0, 308.0], [322.0, 335.0], [358.0, 375.0], [311.0, 319.0]]           # clean whole-post views (OBS s), no browser zoom
+    title: Hit by a transmogrifier
+    caption: "@aaronriddletattoos skulls. Chain mail, white on black, and teeth that look like they got hit by a blender. Everything still reads."
+    tags: [aaron riddle, aaronriddletattoos, skull tattoo, color tattoo, shop talk, nljbs]
+    red: [CHAIN, MAIL, BIG, TEETH, WEIRD, LOVE, READS, NOSE, BLENDER, TRANSMOGRIFIER, FUCKING]
+    ranges:
+      - [358.4, it, 359.7, blender.]
+      - [306.2, The, 308.7, good.]
+      - [310.5, "That's", 311.6, either.]
+      - [342.7, "Dude,", 345.1, "man?"]
+      - [345.7, "It's", 346.3, weird.]
+      - [347.9, I, 351.4, is.]
+      - [354.3, "Yeah,", 363.6, array.]
+  - id: "05"
+    slug: hoyer-way-ahead
+    kind: tattoo
+    handle: timothyhoyer
+    clamp: [479.0, 703.0]
+    pool: [[508.0, 696.0]]           # clean whole-post views (OBS s), no browser zoom
+    title: Way ahead of his time
+    caption: "@timothyhoyer did this rib piece in '98, '99. The hands, the tops of the wings, that color scheme. Way ahead of his time."
+    tags: [timothy hoyer, timothyhoyer, rib tattoo, color tattoo, throwback tattoo, shop talk, nljbs]
+    red: [THROWBACK, HANDS, WINGS, CLEVER, COLOR, SCHEME, "98", "99", "26", "27", YEARS, AHEAD, TIME, TIMOTHY, HOYER]
+    ranges:
+      - [585.3, But, 586.6, time.]
+      - [480.0, this, 482.4, back.]
+      - [483.6, I, 484.9, thing.]
+      - [485.1, We, 488.7, shit.]
+      - [490.1, So, 490.4, clever.]
+      - [494.9, I, 497.4, thing.]
+      - [498.0, Does, 499.4, "that?"]
+      - [500.7, "98,", 501.4, "99."]
+      - [507.9, I, 510.6, ago.]
+      - [580.0, "Damn,", 586.6, time.]
+      - [689.0, Big, 689.9, Hoyer.]
+  - id: "06"
+    slug: teyer-coolest-tattoo
+    kind: tattoo
+    handle: juan_teyer
+    clamp: [705.0, 1012.0]
+    pool: [[705.0, 730.0], [854.0, 960.0], [812.0, 853.0]]           # clean whole-post views (OBS s), no browser zoom
+    title: The coolest tattoo, on every level
+    caption: "Black and gray by @juan_teyer. So much restraint. The suspenders, the pleats, the shadow over the eyes. As good as it gets."
+    tags: [juan teyer, juan_teyer, chicano tattoo, black and grey tattoo, shop talk, nljbs]
+    red: [COOLEST, CRISP, MENDOZA, RESTRAINT, REAL, DEAL, SUSPENDERS, PLEATS, SHADOW, EYES, GANGSTER, GOOD, GETS, LEVEL]
+    ranges:
+      - [714.4, "It's", 716.0, coolest.]
+      - [712.8, "Yeah,", 713.8, level.]
+      - [716.8, I, 717.6, crisp.]
+      - [725.9, Mendoza, 726.8, artwork.]
+      - [735.7, So, 737.0, restraint.]
+      - [751.4, So, 754.5, man.]
+      - [756.2, Fuck, 758.1, man.]
+      - [758.3, The, 761.7, on.]
+      - [801.8, Shadow, 803.7, stuff.]
+      - [804.1, this, 806.2, gangster.]
+      - [807.0, This, 807.6, gets.]
+  - id: "07"
+    slug: teyer-want-to-quit
+    kind: tattoo
+    handle: juan_teyer
+    clamp: [705.0, 1012.0]
+    pool: [[854.0, 960.0], [705.0, 738.0], [812.0, 853.0]]           # clean whole-post views (OBS s), no browser zoom
+    title: The one that makes everybody want to quit
+    caption: "The male pin-up version of a Chicano dude by @juan_teyer. You'll never get out of talking about this tattoo. Nobody's topping it."
+    tags: [juan teyer, juan_teyer, chicano tattoo, black and grey tattoo, shop talk, nljbs]
+    red: [QUIT, NEVER, TATTOO, BAR, MALE, PIN, CHICANO, DUDE, NOBODY, TOP, GIVE, UP, GOOD, GETS]
+    ranges:
+      - [921.6, "Yeah,", 923.5, quit.]
+      - [881.6, "Like,", 883.8, tattoo.]
+      - [888.4, "It's", 890.7, tattoo.]
+      - [902.6, "That's", 905.9, dude.]
+      - [907.1, as, 908.7, that.]
+      - [914.1, "It's", 916.5, okay.]
+      - [917.3, "who's", 918.9, has.]
+      - [919.5, Give, 919.7, up.]
+      - [921.6, "Yeah,", 923.5, quit.]
