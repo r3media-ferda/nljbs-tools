@@ -518,7 +518,10 @@ def level_keys(segs, music_db):
 
 def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, out_mp4, tmp):
     tmp.mkdir(parents=True, exist_ok=True)
-    look = f"lut3d=file='{Path(cfg['lut']).expanduser()}':interp=tetrahedral,{cfg.get('finish') or 'null'}"
+    lut = Path(cfg["lut"]).expanduser()
+    if not lut.is_absolute():  # plans name repo cubes as luts/<name>.cube
+        lut = Path(__file__).resolve().parents[1] / lut
+    look = f"lut3d=file='{lut}':interp=tetrahedral,{cfg.get('finish') or 'null'}"
     parts = []
     for i, s in enumerate(segs):
         path, _ = cams[s["clip"]]

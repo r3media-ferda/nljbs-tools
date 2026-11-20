@@ -15,7 +15,7 @@ shoot: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/NOVEMBER/NOVEMBER 11TH
 work: ~/r3-work/palefire/november_november_11th
 # Canon CinemaGamut C-Log3 -> BT.709 WideDR plus the R81 finish (+6% contrast, +15% saturation, slight warmth),
 # baked into one cube by `nljbs luts` and copied here so the build doesn't need the NLJBS Drive mounted.
-lut: ~/r3-work/palefire/luts/PF_093A_CinemaGamut_BT709_finish.cube
+lut: luts/PF_093A_CinemaGamut_BT709_finish.cube   # repo copy; relative paths resolve against the repo
 finish: "null"
 template_xml: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/VIDEO AUTOMATION /STIENHOLDING.xml
 music_db: {talk: -20, punch: -20, action: -8, react: -8, end: -10}   # music level per segment kind, dB

@@ -42,6 +42,19 @@ Work files (audio caches, frames, reports, draft XML) live in `~/nljbs-work/<dat
 Weekly order: `probe` -> `sync --deliver` -> `transcribe` -> `screen` -> write `episodes/R<NN>_edit.yaml` -> `switcher` -> render-check + `lint` -> `switcher --deliver`.
 - `legacy/` read-only copies of the R77-R80 scripts from the drive (several hard-code old VM paths under `/mnt/user-data/uploads`)
 
+### Client shorts (`palefire`, Pale Fire and similar clients)
+
+Work files live in `~/r3-work/palefire/<slug>/`. Style rules: `docs/R3_SHORT_FORM_STYLE.md` (read it before cutting).
+
+- `palefire/probe.py` shoot inventory (dedupe, clock fix, scenes, Log detection) -> `shoot.yaml`, contact sheet
+- `palefire/transcribe.py` Parakeet per camera clip -> `transcripts/<stem>.words.json` + `.txt`
+- `palefire/beats.py` (+ `beats_worker.py`, runs under system `python3.14` with Beat This + torch) -> `music/<track>.beats.json`
+- `palefire/cut.py` vertical reels from `shoots/<date>.yaml` (segment kinds talk/punch/action/react/end, beat snapping, take joins, score counter, title card, Montserrat captions) -> XML, SRT, `--preview` MP4
+- `palefire/social.py` `social` (Instagram/Facebook Reels export + spec check) and `serve` (Cloudflare quick tunnel so Rella can import; `~/r3-work/bin/cloudflared`)
+- `shoots/` per-shoot cut plans with captions and Rella content IDs; `luts/` color cubes (relative `lut:` paths resolve against the repo); `scripts/style_measure.py` re-measures the house style (needs the ECC plugin)
+
+Order: `probe` -> `transcribe` + `beats` -> write `shoots/<date>.yaml` -> `cut --preview` -> Avery reviews -> `<id>_FINAL.mp4` -> `social` -> Rella draft, `serve`, attach -> Avery schedules and turns on auto-publish.
+
 ## Validation
 
 R80 AVE14202: hand-built offset -40.9585 s, `measure()` gives -40.9561 s mid-run, drift 9.6 ms. Re-run this when changing `sync.py`.

@@ -11,7 +11,18 @@ def main():
     p.add_argument("--work", help="work dir (default ~/r3-work/palefire/<slug>)")
     p.add_argument("--no-sheet", action="store_true", help="skip the contact sheet")
 
-    c = sub.add_parser("cut", help="build vertical reels from a shoots/<date>.yaml cut plan: XML + SRT (+ preview)")
+    t = sub.add_parser("transcribe", help="Parakeet word timings per camera clip -> <work>/transcripts/")
+    t.add_argument("folder", help="shoot folder (clips in its RAW VIDEO subfolder)")
+    t.add_argument("stems", nargs="*", help="clip names without extension (default all)")
+    t.add_argument("--work", help="work dir (default ~/r3-work/palefire/<slug>, same as probe)")
+    t.add_argument("--force", action="store_true", help="redo clips that already have a transcript")
+
+    b = sub.add_parser("beats", help="Beat This beats + downbeats for <shoot>/music -> <work>/music/*.beats.json")
+    b.add_argument("folder", help="shoot folder (tracks in its music subfolder)")
+    b.add_argument("--work", help="work dir (default ~/r3-work/palefire/<slug>, same as probe)")
+    b.add_argument("--force", action="store_true", help="redo tracks that already have a beats file")
+
+    c = sub.add_parser("cut",help="build vertical reels from a shoots/<date>.yaml cut plan: XML + SRT (+ preview)")
     c.add_argument("plan")
     c.add_argument("ids", nargs="*", help="reel ids to build (default all)")
     c.add_argument("--preview", action="store_true", help="also render a graded preview MP4 with the music mix")
@@ -25,6 +36,14 @@ def main():
     v.add_argument("--minutes", type=float, default=10, help="close after this long (default 10)")
 
     a = ap.parse_args()
+    if a.cmd == "transcribe":
+        from . import transcribe
+        transcribe.run(a.folder, a.work, a.stems, a.force)
+        return
+    if a.cmd == "beats":
+        from . import beats
+        beats.run(a.folder, a.work, a.force)
+        return
     if a.cmd == "social":
         from . import social
         social.run_social(a.plan, a.ids)

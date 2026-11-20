@@ -2,7 +2,7 @@
 name = "nljbs-tools"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["numpy", "scipy", "pyyaml", "static-ffmpeg", "soundfile", "sherpa-onnx"]
+dependencies = ["numpy", "scipy", "pyyaml", "static-ffmpeg", "soundfile", "sherpa-onnx", "pillow", "opencv-python-headless"]
 
 [project.scripts]
 nljbs = "nljbs.cli:main"
