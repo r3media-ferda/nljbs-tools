@@ -29,6 +29,8 @@ Stable across every period from Jan 2025 to 2026. Treat these as the house numbe
 
 Trend: the 2026 edits open faster and hold less (p95 shot 2.9 s against 3.7 s before). Build new work to the 2026 numbers.
 
+**Do not chase the 0.8 s median by cutting speech.** The median counts punch-ins inside lines. Avery rejected the first automated Pale Fire drafts (2026-11-19) as rushed, with words and sentences cut short. Generated cuts keep whole sentences with breathing room: about 0.2 s before the first word and 0.35 s after the last. Beat-snapping may trim only the silence beyond those pads. One subject per reel (one brewer per taste-test video).
+
 ## Captions
 
 - On every reel with speech. Music-only pieces (STIENHOLDING) carry none.
@@ -61,6 +63,12 @@ Target from now: **-14 LUFS integrated, true peak at or below -1 dBTP**, the sam
 
 1080x1920. Exports mix 30, 29.97 and 23.976 fps; for direct-to-MP4 shorts pick one rate per reel and let ffmpeg conform. Premiere-bound XML stays at 29.97 (`timebase 30`, `ntsc TRUE`).
 
+## Delivery (Rella)
+
+`<id>_FINAL.mp4` is the master. Upload `<id>_SOCIAL.mp4` from `palefire social`: H.264 High, 29.97 fps, broadcast range BT.709, video capped at 12 Mbps, AAC 128 kbps 48 kHz, index at the front, 3 to 90 s. That meets Instagram Reels (25 Mbps, 128 kbps audio, 300 MB caps) and Facebook Reels (3 to 90 s). Canon MP4s are full range; the SOCIAL export converts them to broadcast range so platforms do not crush blacks.
+
+Rella imports media only from a public link. `palefire serve <files>` serves only those files through a Cloudflare quick tunnel, checks each link, and closes after the import (or after 10 minutes). Captions and Rella content IDs live in the shoot plan (`caption:`, `rella:`). Drafts go in unscheduled with auto-publish off; Avery sets the date and turns on auto-publish.
+
 ## Pale Fire
 
 ### Music-driven event piece (STIENHOLDING, Oktoberfest, 63 s)
@@ -78,4 +86,4 @@ Music sits about 3.7 dB down the whole way (level 0.65), re-edited with two cros
 
 ### Speech-driven series (Nov 11 blindfold tasting)
 
-Use the talking-reel numbers above: captions, punch-ins on the guess, cut on words, hold on the reveal reaction. Canon Log footage needs the C-Log3 LUT before anything else (see `palefire probe`).
+One video per taster. Captions, a punch-in on each guess, whole sentences, and a hold on the reveal reaction. A running score counter ("n/3" with three dots that turn green or red) updates on each reveal. Cold-open on the strongest line. Beer names, as written on the glasses: Negative Boogie, Hazy Bayse, Boogie Nights; Simple Man is also on tap. Canon Log footage needs the C-Log3 LUT before anything else (see `palefire probe`).

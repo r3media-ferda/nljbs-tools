@@ -1,0 +1,137 @@
+# Pale Fire, Nov 11 2026: three blind-challenge reels. Built by `palefire cut shoots/2026-11-11.yaml [--preview]`.
+# v2 after Avery's notes (2026-11-19): not rushed, one brewer per video, score counter, real beer names, cold-open hooks.
+#
+# Segments: [clip stem, a, b, kind, (scale %)]. For dialogue, a/b are the rough start/end of the speech in source seconds
+# (transcripts/<clip>.words.json); the builder keeps every word touching [a, b] whole and adds breathing room.
+#   talk   = dialogue; music ducks under it
+#   punch  = dialogue on a 115% punch-in (the guess, the punchline)
+#   action = no dialogue (pour); music comes up, times used as given
+#   end    = closing line; music lifts
+#   react  = picture only (the taster's reaction while Avery calls right/wrong off camera); camera audio muted, music up
+# title_card: {text, until}: one static line from the start until segment `until` begins.
+# score: [segment index, source time of the reveal word, right|wrong]. counter_from: segment where n/3 appears.
+
+shoot: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/NOVEMBER/NOVEMBER 11TH
+work: ~/r3-work/palefire/november_november_11th
+# Canon CinemaGamut C-Log3 -> BT.709 WideDR plus the R81 finish (+6% contrast, +15% saturation, slight warmth),
+# baked into one cube by `nljbs luts` and copied here so the build doesn't need the NLJBS Drive mounted.
+lut: ~/r3-work/palefire/luts/PF_093A_CinemaGamut_BT709_finish.cube
+finish: "null"
+template_xml: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/VIDEO AUTOMATION /STIENHOLDING.xml
+music_db: {talk: -20, punch: -20, action: -8, react: -8, end: -10}   # music level per segment kind, dB
+snap_window: 0.30                                          # move a cut up to this far (about half a beat), silence only
+
+# caption spellings: beer names as written on the glasses (Avery, 2026-11-19), plus ASR slips
+fix:
+  negative boogie: Negative Boogie
+  hazy baisy: Hazy Bayse
+  boogie nights: Boogie Nights
+  boogie knights: Boogie Nights
+  simple man: Simple Man
+  pailfire: Pale Fire
+  palefire: Pale Fire
+  pale fire: Pale Fire
+  pala: Palate
+  nouls: "No"
+  pretty happy: pretty hoppy
+  this pipe: this pint
+  two four: two, one
+  how do you: How do you
+  feel better performance: feel about your performance
+
+reels:
+  - id: PF_1111_taste_isaac
+    title: Brewer Isaac, blind taste test (2/3)
+    caption: |
+      Can a brewer pick his own beers blindfolded? 🙈🍺
+
+      Isaac took on our blind taste test: three IPAs, one bandana, zero peeking. Negative Boogie ✅ Hazy Bayse ✅ and then the palate called it a day. 2 out of 3 ain't bad.
+
+      Think you could beat him? 👇
+    rella: {space: Pale Fire Brewing - Harrisonburg, content_id: caa87af2-d13f-46b1-a5ab-4461fec09add, platforms: [instagram reel, facebook reel]}
+    music: ES_A Thief in the Night - Etienne Roussel.mp3
+    payoff: 11                  # the Simple Man miss lands on the track's break
+    break_at: 45.8
+    counter_from: 1
+    # v3 (Avery, 2026-11-19): Avery's off-camera lines are out: the name/intro prompt, "Let's go", "Yes, sir",
+    # "Two for three", "No". Each reveal is now Isaac's silent reaction with the counter flipping.
+    score:
+      - [5, 50.64, right]       # Negative Boogie (Avery's "Let's go", muted)
+      - [7, 91.88, right]       # Hazy Bayse (Avery's "Yes, sir", muted)
+      - [11, 140.68, wrong]     # guessed Simple Man (Avery's "No", muted)
+    segments:
+      - [093A7673,   4.90,   6.96, talk]    # OPEN: I'm Isaac and I'm a brewer here at Pale Fire. (Avery, v4: no repeated hook)
+      - [093A7673,  22.52,  22.80, talk]    # I can't see.
+      - [093A7673,  33.69,  34.71, talk]    # Smells like an IPA.
+      - [093A7673,  40.73,  41.67, talk]    # Oh man.
+      - [093A7673,  47.93,  48.65, punch]   # Is that Negative Boogie?
+      - [093A7673,  50.45,  51.65, react]   # reveal: right
+      - [093A7673,  88.29,  89.21, punch]   # Hazy Bayse?
+      - [093A7673,  91.70,  92.90, react]   # reveal: right
+      - [093A7673, 118.20, 119.90, talk]    # Oh, that tastes familiar.
+      - [093A7673, 126.00, 131.00, talk]    # dang it, it hits a sense memory and no names are coming to mind.
+      - [093A7673, 138.11, 139.13, punch]   # Is that Simple Man?
+      - [093A7673, 140.50, 141.70, react]   # reveal: wrong
+      - [093A7673, 148.28, 151.61, talk]    # Alright, so yeah. Palate got messed up from drinking all the other IPAs.
+      - [093A7673, 155.16, 156.45, end]     # Come on down to Pale Fire.
+
+  - id: PF_1111_taste_scott
+    title: Head brewer Scott, blind taste test (1/3)
+    caption: |
+      Not even the head brewer is safe from the blindfold 😅🍺
+
+      Scott stepped up for the blind taste test and his first read was "tastes like beer." Two misses later, he finally landed Boogie Nights. 1 out of 3 for the guy who brews them.
+
+      How many could you get right? 👇
+    rella: {space: Pale Fire Brewing - Harrisonburg, content_id: c189191d-682a-47e6-906c-e55752e7472d, platforms: [instagram reel, facebook reel]}
+    music: ES_Low Tide - Mike Franklyn.mp3
+    music_at: 0.3               # soft intro under the cold open; groove comes in about 9 s later
+    counter_from: 2
+    score:
+      - [4, 49.91, wrong]       # guessed Boogie Nights: "Negative"
+      - [7, 87.68, wrong]       # second guess: "No"
+      - [11, 116.31, right]     # Boogie Nights: "Ding ding ding"
+    segments:
+      - [093A7676,  30.12,  31.61, punch]   # HOOK: All right, tastes like beer.
+      - [093A7676,   6.64,  10.82, talk]    # Okay, I'm Scott, I'm the head brewer and I'm here to do a blind taste testing.
+      - [093A7676,  35.00,  36.08, talk]    # Tastes pretty hoppy.
+      - [093A7676,  41.24,  42.55, punch]   # Gotta be Boogie Nights.
+      - [093A7676,  49.91,  50.57, talk]    # Negative.
+      - [093A7676,  79.52,  81.52, talk]    # I'm gonna say that is...
+      - [093A7676,  84.96,  85.82, punch]   # ...like a mug?  (CHECK: possibly a beer name the ASR missed)
+      - [093A7676,  87.68,  87.99, talk]    # No.
+      - [093A7676,  91.36,  92.22, talk]    # Oh man.
+      - [093A7676,  94.88,  95.66, talk]    # Number three.
+      - [093A7676, 108.00, 109.80, talk]    # Okay, also pretty hoppy.
+      - [093A7676, 113.83, 118.69, punch]   # I'm gonna say that's gotta be Boogie Nights then, right? Ding ding ding. Hey, got one.
+      - [093A7676, 122.31, 126.75, talk]    # How do you feel about your performance? Not great. Yeah, I was hoping to go at least two for three.
+      - [093A7676, 130.79, 133.44, end]     # Come on down to Pale Fire and try it yourself. (camera tips to the floor at 134.0 s, so "Blind or not." is out)
+
+  - id: PF_1111_blind_pour
+    title: Manager vs bartender, blind pour
+    caption: |
+      Manager vs. bartender: who pours a better pint blindfolded? 🍺🙈
+
+      Matt went first and gave his own pour a 6 out of 10. Then our bartender tied on the bandana and came in at a 9.5. Sorry, Matt.
+
+      Tag the friend who'd spill it everywhere 👇
+    rella: {space: Pale Fire Brewing - Harrisonburg, content_id: 5ddd2d6c-e438-41d1-a09b-3cec3e402e41, platforms: [instagram reel, facebook reel]}
+    music: ES_Tacet (Instrumental Version) - Clara Mendes.mp3
+    music_at: 0.5               # steady 115 BPM bed with no break
+    title_card: {text: BLIND POUR CHALLENGE, until: 2}
+    # v5: "Let's go!" is out (camera swings off her). v3: bandana line and Avery's "What do you rate it at? Hold it up." are out
+    segments:
+      - [093A7636,  48.80,  50.10, punch]   # HOOK: I beat the manager.
+      - [093A7629,   0.64,   3.97, talk]    # Hi Matt, how well do you think you're gonna pour this pint?
+      - [093A7629,   4.72,   6.31, talk, {end: 6.38}]   # I think I'm gonna get it spot on. (his "I um" is audible from 6.40)
+      - [093A7631,  13.44,  16.74, talk]    # This should be muscle memory for me. We'll see what happens.
+      - [093A7631,  16.60,  25.30, action]       # Matt's pour, one wide shot (a 115% punch-in cropped his head off)
+      - [093A7631,  25.52,  28.36, talk]    # Little low. Good head, little low.
+      - [093A7631,  29.66,  35.99, punch]   # Could be better. How do you rate it? That's a six out of ten. That's really not what I expected.
+      - [093A7636,   4.32,   9.25, talk]    # I am really worried I'm gonna go over. I'm not gonna lie, I'm kind of a heavy pour.
+      - [093A7636,  26.09,  27.35, talk]    # Ready? Three, two...
+      - [093A7636,  28.17,  32.40, action]       # her pour, wide (starts where "...two, one" ends)
+      - [093A7636,  32.40,  36.60, action, 115]  # punched in: the glass fills
+      - [093A7636,  36.60,  40.60, action]       # glass on the tray, bandana comes off
+      - [093A7636,  48.80,  52.14, punch]   # I beat the manager. I give that a 9.5.
+      - [093A7636,  66.48,  68.93, end]     # Come on down to Pale Fire for good beer.
