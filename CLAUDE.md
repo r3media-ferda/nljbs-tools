@@ -49,7 +49,9 @@ Work files live in `~/r3-work/palefire/<slug>/`. Style rules: `docs/R3_SHORT_FOR
 - `palefire/probe.py` shoot inventory (dedupe, clock fix, scenes, Log detection) -> `shoot.yaml`, contact sheet
 - `palefire/transcribe.py` Parakeet per camera clip -> `transcripts/<stem>.words.json` + `.txt`
 - `palefire/beats.py` (+ `beats_worker.py`, runs under system `python3.14` with Beat This + torch) -> `music/<track>.beats.json`
-- `palefire/cut.py` vertical reels from `shoots/<date>.yaml` (segment kinds talk/punch/action/react/end, beat snapping, take joins, score counter, title card, Montserrat captions) -> XML, SRT, `--preview` MP4
+- `palefire/cut.py` vertical reels from `shoots/<date>.yaml` (segment kinds talk/punch/action/react/end, beat snapping, take joins, score counter, title card, Montserrat captions, b-roll cutaways over dialogue, `rotate:` for untagged vertical footage, `clip_lut:` per-clip cubes, `{start, end}` hard in/out points) -> XML, SRT, `--preview` MP4
+  - Frame checks run before anything is written and stop the build: no shot under 12 frames, no soft or motion-blurred b-roll/action shots, no blurred frames at any shot's edges, speaker's face in frame at both ends of dialogue shots, and word ends measured from the audio (the ASR's end times run short). Never ship a reel that skips them; also eyeball 9 frames around every cut.
+- `palefire/music.py` `music index` / `music pick`: the shared music library (folder = tag), analyzed into `~/r3-work/music/`; `cut` takes a track name from it directly
 - `palefire/social.py` `social` (Instagram/Facebook Reels export + spec check) and `serve` (Cloudflare quick tunnel so Rella can import; `~/r3-work/bin/cloudflared`)
 - `shoots/` per-shoot cut plans with captions and Rella content IDs; `luts/` color cubes (relative `lut:` paths resolve against the repo); `scripts/style_measure.py` re-measures the house style (needs the ECC plugin)
 
