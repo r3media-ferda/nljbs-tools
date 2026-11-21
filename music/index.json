@@ -1,0 +1,428 @@
+[
+ {
+  "file": "ES_A Place for Us - Howard Harper-Barnes.mp3",
+  "rel": "cinematic-build/ES_A Place for Us - Howard Harper-Barnes.mp3",
+  "tag": "cinematic-build",
+  "title": "A Place for Us",
+  "artist": "Howard Harper-Barnes",
+  "duration": 167.0,
+  "bpm": 230.8,
+  "beat_jitter": 0.382,
+  "lufs": -12.8,
+  "intro": 2.0,
+  "breaks": [
+   14.76,
+   22.02,
+   28.02,
+   40.02
+  ],
+  "lifts": [
+   21.76,
+   25.76,
+   38.02,
+   42.02
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Every Dawn - David Celeste.mp3",
+  "rel": "cinematic-build/ES_Every Dawn - David Celeste.mp3",
+  "tag": "cinematic-build",
+  "title": "Every Dawn",
+  "artist": "David Celeste",
+  "duration": 122.75,
+  "bpm": 90.9,
+  "beat_jitter": 0.012,
+  "lufs": -16.4,
+  "intro": 5.5,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Mountain Skylines - David Celeste.mp3",
+  "rel": "cinematic-build/ES_Mountain Skylines - David Celeste.mp3",
+  "tag": "cinematic-build",
+  "title": "Mountain Skylines",
+  "artist": "David Celeste",
+  "duration": 123.1,
+  "bpm": 88.2,
+  "beat_jitter": 0.014,
+  "lufs": -12.8,
+  "intro": 10.42,
+  "breaks": [
+   32.92
+  ],
+  "lifts": [
+   39.06
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Random Acts of Kindness - Airae.mp3",
+  "rel": "cinematic-build/ES_Random Acts of Kindness - Airae.mp3",
+  "tag": "cinematic-build",
+  "title": "Random Acts of Kindness",
+  "artist": "Airae",
+  "duration": 151.18,
+  "bpm": 100.0,
+  "beat_jitter": 0.289,
+  "lufs": -10.3,
+  "intro": 28.8,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Silver Mirror - Clarence Reed.mp3",
+  "rel": "cinematic-build/ES_Silver Mirror - Clarence Reed.mp3",
+  "tag": "cinematic-build",
+  "title": "Silver Mirror",
+  "artist": "Clarence Reed",
+  "duration": 132.07,
+  "bpm": 187.5,
+  "beat_jitter": 1.472,
+  "lufs": -15.3,
+  "intro": 39.14,
+  "breaks": [
+   58.74,
+   109.56
+  ],
+  "lifts": [
+   76.32
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Crossfire (Instrumental Version) - Conditional.mp3",
+  "rel": "event-hype/ES_Crossfire (Instrumental Version) - Conditional.mp3",
+  "tag": "event-hype",
+  "title": "Crossfire (Instrumental Version)",
+  "artist": "Conditional",
+  "duration": 184.09,
+  "bpm": 120.0,
+  "beat_jitter": 0.1,
+  "lufs": -7.9,
+  "intro": 24.12,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Inari - Tigerblood Jewel.mp3",
+  "rel": "event-hype/ES_Inari - Tigerblood Jewel.mp3",
+  "tag": "event-hype",
+  "title": "Inari",
+  "artist": "Tigerblood Jewel",
+  "duration": 156.25,
+  "bpm": 130.4,
+  "beat_jitter": 0.022,
+  "lufs": -9.8,
+  "intro": 15.0,
+  "breaks": [
+   56.26
+  ],
+  "lifts": [
+   60.0
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Map of the Stars - First Timer.mp3",
+  "rel": "event-hype/ES_Map of the Stars - First Timer.mp3",
+  "tag": "event-hype",
+  "title": "Map of the Stars",
+  "artist": "First Timer",
+  "duration": 246.88,
+  "bpm": 130.4,
+  "beat_jitter": 0.234,
+  "lufs": -9.7,
+  "intro": 7.48,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Song for Jenny - OTE.mp3",
+  "rel": "event-hype/ES_Song for Jenny - OTE.mp3",
+  "tag": "event-hype",
+  "title": "Song for Jenny",
+  "artist": "OTE",
+  "duration": 182.95,
+  "bpm": 115.4,
+  "beat_jitter": 0.777,
+  "lufs": -11.2,
+  "intro": 1.06,
+  "breaks": [
+   93.4
+  ],
+  "lifts": [
+   99.42
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Deck the Halls (Instrumental Version) - Jordin Sparks.mp3",
+  "rel": "holiday/ES_Deck the Halls (Instrumental Version) - Jordin Sparks.mp3",
+  "tag": "holiday",
+  "title": "Deck the Halls (Instrumental Version)",
+  "artist": "Jordin Sparks",
+  "duration": 168.87,
+  "bpm": 120.0,
+  "beat_jitter": 0.204,
+  "lufs": -13.3,
+  "intro": 16.02,
+  "breaks": [
+   92.02,
+   127.02
+  ],
+  "lifts": [
+   96.0,
+   135.02
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Everyone Wants Home For Christmas (Instrumental Version) - The Snowy Hill Singers.mp3",
+  "rel": "holiday/ES_Everyone Wants Home For Christmas (Instrumental Version) - The Snowy Hill Singers.mp3",
+  "tag": "holiday",
+  "title": "Everyone Wants Home For Christmas (Instrumental Version)",
+  "artist": "The Snowy Hill Singers",
+  "duration": 262.44,
+  "bpm": 187.5,
+  "beat_jitter": 0.031,
+  "lufs": -9.6,
+  "intro": 0.04,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Gift-Wrapping Workshop - Arthur Benson.mp3",
+  "rel": "holiday/ES_Gift-Wrapping Workshop - Arthur Benson.mp3",
+  "tag": "holiday",
+  "title": "Gift-Wrapping Workshop",
+  "artist": "Arthur Benson",
+  "duration": 125.94,
+  "bpm": 120.0,
+  "beat_jitter": 0.02,
+  "lufs": -10.0,
+  "intro": 6.02,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Nothing on My Christmas List but You (Instrumental Version) - Mindme.mp3",
+  "rel": "holiday/ES_Nothing on My Christmas List but You (Instrumental Version) - Mindme.mp3",
+  "tag": "holiday",
+  "title": "Nothing on My Christmas List but You (Instrumental Version)",
+  "artist": "Mindme",
+  "duration": 161.95,
+  "bpm": 125.0,
+  "beat_jitter": 0.116,
+  "lufs": -11.8,
+  "intro": 19.24,
+  "breaks": [
+   32.66,
+   111.38
+  ],
+  "lifts": [
+   34.58,
+   124.84
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Toffee - Lukas Got Lucky.mp3",
+  "rel": "party-upbeat/ES_Toffee - Lukas Got Lucky.mp3",
+  "tag": "party-upbeat",
+  "title": "Toffee",
+  "artist": "Lukas Got Lucky",
+  "duration": 148.45,
+  "bpm": 120.0,
+  "beat_jitter": 0.266,
+  "lufs": -10.3,
+  "intro": 2.06,
+  "breaks": [
+   81.38
+  ],
+  "lifts": [
+   83.42
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_WHAT! - Basixx.mp3",
+  "rel": "party-upbeat/ES_WHAT! - Basixx.mp3",
+  "tag": "party-upbeat",
+  "title": "WHAT!",
+  "artist": "Basixx",
+  "duration": 145.71,
+  "bpm": 115.4,
+  "beat_jitter": 0.015,
+  "lufs": -9.3,
+  "intro": 2.1,
+  "breaks": [
+   33.4
+  ],
+  "lifts": [
+   35.5
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_When You Move - Stonekeepers.mp3",
+  "rel": "party-upbeat/ES_When You Move - Stonekeepers.mp3",
+  "tag": "party-upbeat",
+  "title": "When You Move",
+  "artist": "Stonekeepers",
+  "duration": 254.78,
+  "bpm": 120.0,
+  "beat_jitter": 0.02,
+  "lufs": -8.3,
+  "intro": 0.78,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Dustyfied - Dusty Decks.mp3",
+  "rel": "playful-quirky/ES_Dustyfied - Dusty Decks.mp3",
+  "tag": "playful-quirky",
+  "title": "Dustyfied",
+  "artist": "Dusty Decks",
+  "duration": 156.63,
+  "bpm": 93.8,
+  "beat_jitter": 0.017,
+  "lufs": -8.9,
+  "intro": 10.12,
+  "breaks": [
+   78.32,
+   141.46
+  ],
+  "lifts": [
+   80.86
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Gimme More - Guustavv.mp3",
+  "rel": "playful-quirky/ES_Gimme More - Guustavv.mp3",
+  "tag": "playful-quirky",
+  "title": "Gimme More",
+  "artist": "Guustavv",
+  "duration": 158.45,
+  "bpm": 103.4,
+  "beat_jitter": 0.108,
+  "lufs": -10.0,
+  "intro": 18.66,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Oh What A Whirl - Jules Gaia.mp3",
+  "rel": "playful-quirky/ES_Oh What A Whirl - Jules Gaia.mp3",
+  "tag": "playful-quirky",
+  "title": "Oh What A Whirl",
+  "artist": "Jules Gaia",
+  "duration": 163.76,
+  "bpm": 111.1,
+  "beat_jitter": 0.017,
+  "lufs": -8.1,
+  "intro": 24.0,
+  "breaks": [
+   72.0,
+   130.9
+  ],
+  "lifts": [
+   82.92,
+   133.1
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Skeemers - Cecilia Lindh.mp3",
+  "rel": "playful-quirky/ES_Skeemers - Cecilia Lindh.mp3",
+  "tag": "playful-quirky",
+  "title": "Skeemers",
+  "artist": "Cecilia Lindh",
+  "duration": 161.29,
+  "bpm": 96.8,
+  "beat_jitter": 0.017,
+  "lufs": -10.4,
+  "intro": 10.02,
+  "breaks": [
+   30.0
+  ],
+  "lifts": [
+   40.0
+  ],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Coconuts - View Points.mp3",
+  "rel": "warm-acoustic/ES_Coconuts - View Points.mp3",
+  "tag": "warm-acoustic",
+  "title": "Coconuts",
+  "artist": "View Points",
+  "duration": 132.71,
+  "bpm": 96.8,
+  "beat_jitter": 0.267,
+  "lufs": -15.0,
+  "intro": 7.66,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_I Won't Be Turned (Instrumental Version) - Sylvia Peyton.mp3",
+  "rel": "warm-acoustic/ES_I Won't Be Turned (Instrumental Version) - Sylvia Peyton.mp3",
+  "tag": "warm-acoustic",
+  "title": "I Won't Be Turned (Instrumental Version)",
+  "artist": "Sylvia Peyton",
+  "duration": 193.7,
+  "bpm": 103.4,
+  "beat_jitter": 0.169,
+  "lufs": -10.2,
+  "intro": 27.5,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_On My Doorstep - View Points.mp3",
+  "rel": "warm-acoustic/ES_On My Doorstep - View Points.mp3",
+  "tag": "warm-acoustic",
+  "title": "On My Doorstep",
+  "artist": "View Points",
+  "duration": 141.4,
+  "bpm": 88.2,
+  "beat_jitter": 0.083,
+  "lufs": -11.3,
+  "intro": 0.5,
+  "breaks": [],
+  "lifts": [],
+  "indexed": "2026-11-21"
+ },
+ {
+  "file": "ES_Sweet Embrace (Instrumental Version) - Go For Howell.mp3",
+  "rel": "warm-acoustic/ES_Sweet Embrace (Instrumental Version) - Go For Howell.mp3",
+  "tag": "warm-acoustic",
+  "title": "Sweet Embrace (Instrumental Version)",
+  "artist": "Go For Howell",
+  "duration": 181.23,
+  "bpm": 162.2,
+  "beat_jitter": 0.344,
+  "lufs": -14.1,
+  "intro": 7.52,
+  "breaks": [
+   149.46
+  ],
+  "lifts": [
+   161.18
+  ],
+  "indexed": "2026-11-21"
+ }
+]

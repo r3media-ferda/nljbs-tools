@@ -1,0 +1,5 @@
+# Where the shared music audio lives on each machine. First folder that exists wins; $R3_MUSIC overrides.
+# The index (index.json, beats/) is in this repo folder; the audio stays out of git.
+roots:
+  - ~/Library/CloudStorage/SynologyDrive-Avery/R3 MUSIC LIBRARY   # shared Synology folder (Avery, Oz)
+  - /Volumes/Extreme SSD/MUSIC LIBRARY                            # Avery's original copy on the SSD

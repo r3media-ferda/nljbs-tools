@@ -4,12 +4,14 @@ Library: one folder per vibe, Epidemic names kept as downloaded, e.g.
   /Volumes/Extreme SSD/MUSIC LIBRARY/party-upbeat/ES_Toffee - Lukas Got Lucky.mp3
 The folder name is the track's tag. Add tracks any time and re-run `index`; only new tracks are analyzed.
 
-index -> ~/r3-work/music/beats/<stem>.beats.json  (same format `palefire beats` writes; `palefire cut` reads it)
-         ~/r3-work/music/index.json               one entry per track: tag, title, artist, duration, bpm,
-                                                  beat steadiness, loudness, intro length, breaks and lifts
+index -> music/beats/<stem>.beats.json  (in the repo; same format `palefire beats` writes; `palefire cut` reads it)
+         music/index.json               one entry per track: tag, title, artist, duration, bpm, beat steadiness,
+                                        loudness, intro length, breaks and lifts, and its path inside the library
+The index lives in the git repo so any session (this Mac, Oz's, a cloud session) can pick tracks without the audio.
+The audio lives in a shared folder; music/library.yaml lists where it can be, first one found wins.
 pick  -> ranks tracks for a reel: tag, tempo range, enough length, a break to land the payoff on, and not used
          for the same client recently (usage comes from the music: lines in shoots/*.yaml, so it needs no upkeep).
-Reads the library, writes only to ~/r3-work/music.
+Reads the library, writes only to the repo's music/ folder.
 """
 import datetime as dt
 import json
@@ -26,13 +28,23 @@ from nljbs import media
 
 from .beats import BEAT_PY
 
-LIBRARY = Path(os.environ.get("R3_MUSIC", "/Volumes/Extreme SSD/MUSIC LIBRARY"))
-STORE = Path(os.environ.get("R3_WORK", Path.home() / "r3-work")) / "music"
 AUDIO = {".mp3", ".wav", ".aif", ".aiff", ".m4a"}
 REPO = Path(__file__).resolve().parents[1]
+STORE = REPO / "music"
 
 
-def tracks(library=LIBRARY):
+def library_root():
+    """The shared library folder on this machine: $R3_MUSIC, else the first folder in music/library.yaml that exists."""
+    if os.environ.get("R3_MUSIC"):
+        return Path(os.environ["R3_MUSIC"]).expanduser()
+    roots = (yaml.safe_load((STORE / "library.yaml").read_text()) or {}).get("roots", [])
+    for r in roots:
+        if Path(r).expanduser().is_dir():
+            return Path(r).expanduser()
+    raise SystemExit("music library not found: mount it or add its folder to music/library.yaml (roots:)")
+
+
+def tracks(library):
     return sorted(p for p in Path(library).rglob("*") if p.suffix.lower() in AUDIO and not p.name.startswith("."))
 
 
@@ -69,8 +81,8 @@ def shape(beats):
             [round(t, 2) for t in lifts if t < end])
 
 
-def run_index(library=LIBRARY, force=False):
-    library = Path(library)
+def run_index(library=None, force=False):
+    library = Path(library).expanduser() if library else library_root()
     if not library.is_dir():
         raise SystemExit(f"{library}: not found (is the drive mounted?)")
     beats_dir = STORE / "beats"
@@ -88,12 +100,13 @@ def run_index(library=LIBRARY, force=False):
     for p in tracks(library):
         b = json.loads((beats_dir / f"{p.stem}.beats.json").read_text())
         prev = old.get(p.name)
-        if prev and not force and prev.get("path") == str(p):
+        rel = str(p.relative_to(library))
+        if prev and not force and prev.get("rel") == rel:
             index.append(prev)
             continue
         title, artist = title_artist(p.stem)
         intro, breaks, lifts = shape(b)
-        index.append(dict(file=p.name, path=str(p), tag=p.parent.name, title=title, artist=artist,
+        index.append(dict(file=p.name, rel=rel, tag=p.parent.name, title=title, artist=artist,
                           duration=b["duration"], bpm=b["bpm"], beat_jitter=b["beat_jitter"], lufs=lufs(p),
                           intro=intro, breaks=breaks, lifts=lifts, indexed=dt.date.today().isoformat()))
     (STORE / "index.json").write_text(json.dumps(index, indent=1))
@@ -132,7 +145,7 @@ def lookup(name):
     key = Path(name).stem.lower()
     for e in json.loads(idx.read_text()):
         if key in (Path(e["file"]).stem.lower(), e["title"].lower()):
-            return Path(e["path"]), STORE / "beats" / f"{Path(e['file']).stem}.beats.json"
+            return library_root() / e["rel"], STORE / "beats" / f"{Path(e['file']).stem}.beats.json"
     return None
 
 

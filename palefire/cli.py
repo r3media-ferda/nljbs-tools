@@ -52,7 +52,7 @@ def main():
     if a.cmd == "music":
         from . import music
         if a.mcmd == "index":
-            music.run_index(a.library or music.LIBRARY, a.force)
+            music.run_index(a.library, a.force)
         else:
             music.run_pick(a.tag, a.bpm, a.min, a.client, a.days, a.need_break)
         return
