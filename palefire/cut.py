@@ -24,10 +24,12 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.parse import quote
 
+import numpy as np
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
 from nljbs import media
+from nljbs.transcribe import SR as ASR_SR, band_levels
 
 FPS = 30000 / 1001
 PUNCH = 115.0
@@ -66,7 +68,28 @@ def load_words(work, stem):
     return json.loads((work / "transcripts" / f"{stem}.words.json").read_text())
 
 
-def resolve(s, ws, dur):
+MIN_SHOT = 12        # frames (0.4 s): no picture, main or b-roll, may be shorter; anything less reads as a flash
+VOICE_DROP = 14.0    # dB under the word's peak that counts as the voice having stopped
+SHARP_MIN = 40.0     # median Laplacian variance at 270x480: under this a chosen shot is soft or out of focus
+BLUR_DIP = 0.5       # a frame under half the sharpness its shot reaches (75th percentile nearby) is motion blur
+BLUR_ABS = 130.0     # ...and under this absolute sharpness (every blurred frame Avery flagged measured 11-121)
+
+
+def voice_end(lv, t0, t1, limit):
+    """Where a word really stops. The ASR gives each word a start but only an estimated end, and a shouted
+    "Singooo!" runs well past it. Walk the 150-3500 Hz level forward until it falls VOICE_DROP under the word's
+    peak, capped at the next word (limit) and 1.5 s past the estimate. lv: band levels in dB per 10 ms hop."""
+    i0, i1 = int(t0 * 100), max(int(t0 * 100) + 1, int(t1 * 100))
+    if i0 >= len(lv):
+        return t1
+    ref = float(np.max(lv[i0:min(i1 + 5, len(lv))]))
+    i, stop = i1, min(len(lv), int(min(limit, t1 + 1.5) * 100))
+    while i < stop and lv[i] > ref - VOICE_DROP:
+        i += 1
+    return max(t1, min(i * 0.01 + 0.05, limit))
+
+
+def resolve(s, ws, dur, lv=None):
     """Expand a dialogue segment to whole words plus breathing room. Action segments keep their times."""
     if s["kind"] in SILENT:
         s["first"] = s["last"] = None
@@ -82,8 +105,14 @@ def resolve(s, ws, dur):
     next_start = max(ws[i1 + 1]["t0"] - GAP, ws[i1]["t1"]) if i1 + 1 < len(ws) else dur
     if "end" in s:  # hard out point, for a next word the ASR timed late (heard onset, not transcript)
         next_start = min(next_start, float(s["end"]))
+    if "start" in s:  # hard in point, e.g. past blurred frames where the camera was still moving
+        prev_end = max(prev_end, float(s["start"]))
+    if lv is not None:  # the last word ends where the voice stops, not where the ASR guessed
+        heard = voice_end(lv, ws[i1]["t0"], ws[i1]["t1"], next_start)
+        s["last"] = dict(ws[i1], t1=round(heard, 3), t1_asr=ws[i1]["t1"])
+        next_start = max(next_start, heard)
     s["inp"] = max(ws[i0]["t0"] - HEAD_PAD, prev_end, 0.0)
-    s["out"] = min(ws[i1]["t1"] + TAIL_PAD, next_start, dur)
+    s["out"] = min(s["last"]["t1"] + TAIL_PAD, next_start, dur)
     s["prev_end"], s["next_start"] = prev_end, next_start
     return s
 
@@ -152,6 +181,140 @@ def snap_plan(segs, beats, music_at, window):
             break
         t += s["out"] - s["inp"]
     return segs
+
+
+TURN = {0: "null", -90: "transpose=2", 90: "transpose=1", 180: "hflip,vflip"}
+
+
+def broll_frames(segs):
+    """Lay each segment's b-roll on exact frames and leave no slivers: a gap of main picture under MIN_SHOT
+    between two cutaways, before the first or after the last is absorbed into the b-roll, and a cutaway under
+    MIN_SHOT is dropped. Moving a cutaway's start earlier moves its source in point with it."""
+    for s in segs:
+        wins = sorted(([max(0, fr(b["at"])), min(fr(b["at"]) + fr(b["dur"]), s["len"]), b]
+                       for b in s.get("broll_items", [])), key=lambda w: w[0])
+        out = []
+        for w in wins:
+            if out and w[0] - out[-1][1] < MIN_SHOT:
+                out[-1][1] = max(out[-1][1], w[0])  # close the sliver between cutaways
+                w[0] = out[-1][1]
+            if w[1] - w[0] >= MIN_SHOT:
+                out.append(w)
+        if out and out[0][0] < MIN_SHOT:
+            out[0][0] = 0
+        if out and s["len"] - out[-1][1] < MIN_SHOT:
+            out[-1][1] = s["len"]
+        s["broll_frames"] = [dict(b, a=a, e=e, src=max(0.0, b["src"] - (fr(b["at"]) - a) / FPS)) for a, e, b in out]
+
+
+def picture(segs):
+    """The picture as the viewer sees it: [(label, start frame, frames)], cutaways included."""
+    shots = []
+    for s in segs:
+        t = 0
+        for w in s.get("broll_frames", []):
+            if w["a"] > t:
+                shots.append((s["clip"], s["start"] + t, w["a"] - t))
+            shots.append((f"{w['clip']} (b-roll)", s["start"] + w["a"], w["e"] - w["a"]))
+            t = w["e"]
+        if s["len"] > t:
+            shots.append((s["clip"], s["start"] + t, s["len"] - t))
+    return shots
+
+
+def sharpness(path, t, dur, rot):
+    """Per-frame sharpness (Laplacian variance on a 270x480 gray copy). Camera shake shows up as motion blur:
+    calibrated on the Basye shoot, where Avery's "too shaky" shot measured 11 against 85-165 for clean shots."""
+    w, h = 270, 480
+    raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{t:.3f}", "-t", f"{dur:.3f}", "-i", path,
+                          "-vf", f"{TURN[rot]},scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                         capture_output=True, check=True).stdout
+    f = np.frombuffer(raw, np.uint8)[: len(raw) // (w * h) * w * h].reshape(-1, h, w).astype(np.float32)
+    return np.array([np.var(a[1:-1, 1:-1] * 4 - a[:-2, 1:-1] - a[2:, 1:-1] - a[1:-1, :-2] - a[1:-1, 2:]) for a in f])
+
+
+EDGE = 6            # frames at each end of a shot that must be sharp and (for dialogue) show the speaker
+_FACES = None
+
+
+def faces(path, t, n, rot):
+    """[bool] per frame for n frames from t: is a face in frame (YuNet, the model nljbs reels use)."""
+    global _FACES
+    import cv2
+    if _FACES is None:
+        _FACES = cv2.FaceDetectorYN.create(str(media.WORK_ROOT / "models" / "yunet.onnx"), "", (270, 480), 0.6)
+    raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{max(0.0, t):.3f}", "-i", path, "-frames:v", str(n),
+                          "-vf", f"{TURN[rot]},scale=270:480,format=bgr24", "-f", "rawvideo", "-"],
+                         capture_output=True, check=True).stdout
+    f = np.frombuffer(raw, np.uint8)[: len(raw) // (270 * 480 * 3) * 270 * 480 * 3].reshape(-1, 480, 270, 3)
+    return [_FACES.detect(np.ascontiguousarray(x))[1] is not None for x in f]
+
+
+def edge_checks(segs, cams):
+    """Hanging frames at the ends of every visible stretch of a main shot: motion blur at either edge, and on
+    dialogue shots the speaker out of frame at the start or end (walked off, camera swung away)."""
+    fail = []
+    for s in segs:
+        path, rot = cams[s["clip"]][0], s.get("rot", 0)
+        sh = sharpness(path, s["in_f"] / FPS, s["len"] / FPS, rot)
+        if not len(sh):
+            continue
+        t, spans = 0, []
+        for w in s.get("broll_frames", []):
+            if w["a"] > t:
+                spans.append((t, w["a"]))
+            t = w["e"]
+        if s["len"] > t:
+            spans.append((t, s["len"]))
+        for a, e in spans:
+            if not len(sh[a:e]):
+                continue
+            # motion blur is a sudden dip: judge the edge frames against the half second beside them, so a shot
+            # that softens slowly (subject moving off the focus plane) is not mistaken for a whip
+            for name, lo, hi, ref in (("start", a, min(a + EDGE, e), sh[a:min(a + EDGE + 30, e)]),
+                                      ("end", max(a, e - EDGE), e, sh[max(a, e - EDGE - 30):e])):
+                r = float(np.percentile(ref, 75))  # the sharpness this stretch settles at, not dragged down by the blur
+                dips = int(np.sum((sh[lo:hi] < BLUR_DIP * r) & (sh[lo:hi] < BLUR_ABS)))
+                if dips >= 2:
+                    fail.append(f"{(s['start'] + lo) / FPS:6.2f}s  {s['clip']} @ {(s['in_f'] + lo) / FPS:.2f}s: {dips} blurred "
+                                f"frames at the {name} of the shot (edge {' '.join(f'{v:.0f}' for v in sh[lo:hi])}, "
+                                f"around {r:.0f})")
+            if s["first"] is not None:  # dialogue: the speaker must be in frame through the edges
+                for name, lo in (("start", a), ("end", max(a, e - EDGE))):
+                    seen = faces(path, (s["in_f"] + lo) / FPS, EDGE, rot)
+                    if seen and sum(seen) < len(seen) / 2:
+                        fail.append(f"{(s['start'] + lo) / FPS:6.2f}s  {s['clip']}: speaker out of frame at the {name} "
+                                    f"of the shot ({sum(seen)}/{len(seen)} frames with a face)")
+    return fail
+
+
+def checks(segs, cams):
+    """Frame-level checks before anything is delivered. Returns (failures, warnings) as text lines."""
+    fail, warn = [], []
+    for label, start, n in picture(segs):
+        if n < MIN_SHOT:
+            fail.append(f"{start / FPS:6.2f}s  {label}: {n}-frame shot (minimum {MIN_SHOT})")
+    fail += edge_checks(segs, cams)
+    for s in segs:
+        if s["first"] is not None and s["out"] < s["last"]["t1"] + 0.10:
+            warn.append(f"{s['start'] / FPS:6.2f}s  {s['clip']}: cut lands {s['out'] - s['last']['t1']:+.2f}s from the "
+                        f"end of \"{s['last']['w']}\"")
+        # picture choices (action, react, b-roll) must be sharp: no soft shots, no motion-blurred frames
+        windows = [(s["clip"], s["inp"], s["len"] / FPS, s.get("rot", 0), s["start"])] if s["first"] is None else []
+        windows += [(w["clip"], w["src"], (w["e"] - w["a"]) / FPS, w["rot"], s["start"] + w["a"])
+                    for w in s.get("broll_frames", [])]
+        for clip, t, dur, rot, at in windows:
+            sh = sharpness(cams[clip][0], t, dur, rot)
+            if not len(sh):
+                continue
+            med = float(np.median(sh))
+            dips = np.where((sh < BLUR_DIP * med) & (sh < BLUR_ABS))[0]
+            if med < SHARP_MIN:
+                fail.append(f"{at / FPS:6.2f}s  {clip} @ {t:.2f}s: soft shot (sharpness {med:.0f}, minimum {SHARP_MIN:.0f})")
+            elif len(dips) >= 2:
+                fail.append(f"{at / FPS:6.2f}s  {clip} @ {t:.2f}s: {len(dips)} motion-blurred frames, first at "
+                            f"{(at + dips[0]) / FPS:.2f}s in the reel")
+    return fail, warn
 
 
 def layout(segs):
@@ -352,7 +515,7 @@ def template_filters(template_xml):
     return bm, al
 
 
-def bm_filter(tpl, scale):
+def bm_filter(tpl, scale, rotation=0):
     f = copy.deepcopy(tpl)
     for p in f.iter("parameter"):
         pid, v = p.findtext("parameterid"), p.find("value")
@@ -363,7 +526,7 @@ def bm_filter(tpl, scale):
         if pid == "scale":
             v.text = f"{scale:.4f}"
         elif pid == "rotation":
-            v.text = "0"
+            v.text = str(rotation)
         elif pid == "center" and v.find("horiz") is not None:
             v.find("horiz").text, v.find("vert").text = "0", "0"
     return f
@@ -469,12 +632,20 @@ def build_xml(reel, segs, total, cams, music_path, music_info, music_at, levels,
         path, info = cams[s["clip"]]
         inp = s["in_f"]
         v1.append(clip(f"v-{i}", s["clip"], path, info, s["start"], s["len"], inp, "video",
-                       filt=bm_filter(bm_t, seg_scale(s))))
+                       filt=bm_filter(bm_t, seg_scale(s) * s.get("fit", 1.0), s.get("rot", 0))))
         if s["kind"] == "react":  # Avery's voice off camera: picture only, music carries it
             continue
         a1.append(clip(f"a1-{i}", s["clip"], path, info, s["start"], s["len"], inp, "audio", track_idx=1))
         a2.append(clip(f"a2-{i}", s["clip"], path, info, s["start"], s["len"], inp, "audio", track_idx=2))
     track(vid, v1)
+    bl = []  # V2: b-roll cutaways over dialogue (picture only; the audio stays on the V1 clip's tracks)
+    for i, s in enumerate(segs):
+        for j, b in enumerate(s.get("broll_frames", [])):
+            bpath, binfo = cams[b["clip"]]
+            bl.append(clip(f"b-{i}-{j}", b["clip"], bpath, binfo, s["start"] + b["a"], b["e"] - b["a"], fr(b["src"]),
+                           "video", filt=bm_filter(bm_t, 100.0 * b["fit"], b["rot"])))
+    if bl:
+        track(vid, bl)
     if counter:
         track(vid, [clip(f"sc-{i}", Path(p).stem, str(p), {}, a, b - a, 0, "still")
                     for i, (p, a, b) in enumerate(counter)])
@@ -518,10 +689,17 @@ def level_keys(segs, music_db):
 
 def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, out_mp4, tmp):
     tmp.mkdir(parents=True, exist_ok=True)
-    lut = Path(cfg["lut"]).expanduser()
-    if not lut.is_absolute():  # plans name repo cubes as luts/<name>.cube
-        lut = Path(__file__).resolve().parents[1] / lut
-    look = f"lut3d=file='{lut}':interp=tetrahedral,{cfg.get('finish') or 'null'}"
+    def look_for(clip):
+        """LUT + finish for one clip. clip_lut maps a clip stem to its own cube, or to none (not Log footage)."""
+        name = (cfg.get("clip_lut") or {}).get(clip, cfg.get("lut"))
+        if not name or str(name).lower() == "none":
+            return cfg.get("finish") or "null"
+        lut = Path(name).expanduser()
+        if not lut.is_absolute():  # plans name repo cubes as luts/<name>.cube
+            lut = Path(__file__).resolve().parents[1] / lut
+        return f"lut3d=file='{lut}':interp=tetrahedral,{cfg.get('finish') or 'null'}"
+
+    turn = {0: "null", -90: "transpose=2", 90: "transpose=1", 180: "hflip,vflip"}
     parts = []
     for i, s in enumerate(segs):
         path, _ = cams[s["clip"]]
@@ -529,13 +707,21 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
         sw, sh = int(round(VW * scale / 2) * 2), int(round(VH * scale / 2) * 2)
         # zero each piece's timestamps and pin audio to the video length: HEVC seeks can start a frame late,
         # which drops a frame and slips sync at the concat seams
-        vf = f"setpts=PTS-STARTPTS,{look},scale={sw}:{sh},crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p"
+        vf = (f"setpts=PTS-STARTPTS,{look_for(s['clip'])},{turn[s.get('rot', 0)]},scale={sw}:{sh},"
+              f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p")
         af = (f"{'volume=0' if s['kind'] == 'react' else 'anull'},asetpts=PTS-STARTPTS,"
               f"apad,atrim=duration={s['len'] / FPS:.6f}")
         part = tmp / f"seg{i:02d}.mov"
-        subprocess.run([media.FFMPEG, "-v", "error", "-y", "-ss", f"{s['in_f'] / FPS:.4f}", "-i", path,
-                        "-frames:v", str(s["len"]),
-                        "-vf", vf, "-af", af,
+        ins, fc, last = ["-ss", f"{s['in_f'] / FPS:.4f}", "-i", path], f"[0:v]{vf}[v0];[0:a]{af}[a]", "v0"
+        for k, b in enumerate(s.get("broll_frames", []), 1):  # cutaway: b-roll picture over this segment's audio
+            at, dur = b["a"] / FPS, (b["e"] - b["a"]) / FPS
+            ins += ["-ss", f"{b['src']:.4f}", "-t", f"{dur + 0.1:.4f}", "-i", cams[b["clip"]][0]]
+            fc += (f";[{k}:v]setpts=PTS-STARTPTS,{look_for(b['clip'])},{turn[b['rot']]},scale={VW}:{VH},"
+                   f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p,setpts=PTS+{at:.4f}/TB[b{k}];"
+                   f"[{last}][b{k}]overlay=eof_action=pass:enable='gte(n,{b['a']})*lt(n,{b['e']})'[v{k}]")
+            last = f"v{k}"
+        subprocess.run([media.FFMPEG, "-v", "error", "-y", *ins, "-filter_complex", fc,
+                        "-map", f"[{last}]", "-map", "[a]", "-frames:v", str(s["len"]),
                         "-c:v", "libx264", "-crf", "18", "-preset", "fast",
                         "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", str(part)], check=True)
         parts.append(part)
@@ -590,14 +776,41 @@ def run(plan_yaml, ids=None, preview=False):
         stems = sorted({s["clip"] for s in segs})
         words = {st: load_words(work, st) for st in stems}
         cams = {}
-        for st in stems:
+        for st in stems + sorted({b[0] for s in segs for b in s.get("broll", [])} - set(stems)):
             p = next((shoot / "RAW VIDEO").glob(f"{st}.*"))
             cams[st] = (str(p), media.summarize(p))
+
+        def geom(clip):
+            """rotate: Premiere degrees for footage shot vertical without a rotation tag (-90 = counter-clockwise).
+            fit scales Basic Motion so the rotated frame fills 1080x1920 (1.0 for 1080p, 0.5 for 4K)."""
+            rot = int(cfg.get("rotate", 0))
+            if not rot:
+                return 0, 1.0
+            v = cams[clip][1]["video"]
+            return rot, VH / (v["width"] if rot in (90, -90) else v["height"])
+
+        levels = {}
         for s in segs:
-            resolve(s, words[s["clip"]], cams[s["clip"]][1]["duration"])
+            if s["clip"] not in levels:  # voice level per 10 ms, from the 16 kHz cache `palefire transcribe` made
+                x = media.extract_audio(cams[s["clip"]][0], work / "audio", sr=ASR_SR)
+                levels[s["clip"]] = band_levels(x)
+            resolve(s, words[s["clip"]], cams[s["clip"]][1]["duration"], levels[s["clip"]])
+            if cfg.get("rotate"):
+                s["rot"], s["fit"] = geom(s["clip"])
+            # broll: [[clip, source s, at s into this segment, dur s]] cutaways over this segment's audio
+            s["broll_items"] = [dict(clip=c, src=float(t), at=float(at), dur=float(d), rot=geom(c)[0], fit=geom(c)[1])
+                                for c, t, at, d in s.get("broll", [])]
         music_path = shoot / "music" / reel["music"]
+        beats_path = work / "music" / (Path(reel["music"]).stem + ".beats.json")
+        if not music_path.exists():  # not in the shoot folder: take it from the shared library (palefire music)
+            from .music import lookup
+            hit = lookup(reel["music"])
+            if not hit:
+                raise SystemExit(f"{reel['music']}: not in {shoot / 'music'} and not in the music index "
+                                 f"(run `palefire music index`)")
+            music_path, beats_path = hit
         music_info = media.summarize(music_path)
-        bj = json.loads((work / "music" / (Path(reel["music"]).stem + ".beats.json")).read_text())
+        bj = json.loads(beats_path.read_text())
         beats = bj["beats"]
 
         if "payoff" in reel:  # the YAML's break time is approximate: use the real downbeat nearest to it
@@ -612,6 +825,12 @@ def run(plan_yaml, ids=None, preview=False):
             music_at = reel["break_at"] - segs[reel["payoff"]]["start"] / FPS
         if music_at < 0:
             raise SystemExit(f"{reel['id']}: reel runs longer before the payoff than the track before its break")
+        broll_frames(segs)
+        fail, warn = checks(segs, cams)
+        for line in warn:
+            print(f"  CHECK  {line}")
+        if fail:
+            raise SystemExit(f"{reel['id']}: frame checks failed, nothing written:\n  " + "\n  ".join(fail))
 
         counter = counter_states(reel, segs, total, out_dir)
         title = title_states(reel, segs, out_dir)

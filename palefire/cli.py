@@ -22,6 +22,19 @@ def main():
     b.add_argument("--work", help="work dir (default ~/r3-work/palefire/<slug>, same as probe)")
     b.add_argument("--force", action="store_true", help="redo tracks that already have a beats file")
 
+    m = sub.add_parser("music", help="shared music library: index it once, then pick tracks for a reel")
+    msub = m.add_subparsers(dest="mcmd", required=True)
+    mi = msub.add_parser("index", help="analyze new tracks -> ~/r3-work/music/index.json")
+    mi.add_argument("--library", help="library folder (default /Volumes/Extreme SSD/MUSIC LIBRARY or $R3_MUSIC)")
+    mi.add_argument("--force", action="store_true", help="re-analyze every track")
+    mp = msub.add_parser("pick", help="rank tracks for a reel")
+    mp.add_argument("--tag", help="library folder name, e.g. party-upbeat")
+    mp.add_argument("--bpm", help="tempo range, e.g. 105-125")
+    mp.add_argument("--min", type=float, default=60, help="shortest usable track in seconds (default 60)")
+    mp.add_argument("--client", help="skip tracks this client used recently, e.g. 'PALE FIRE'")
+    mp.add_argument("--days", type=int, default=60, help="how recent counts as recent (default 60)")
+    mp.add_argument("--break", dest="need_break", action="store_true", help="only tracks with a break")
+
     c = sub.add_parser("cut",help="build vertical reels from a shoots/<date>.yaml cut plan: XML + SRT (+ preview)")
     c.add_argument("plan")
     c.add_argument("ids", nargs="*", help="reel ids to build (default all)")
@@ -36,6 +49,13 @@ def main():
     v.add_argument("--minutes", type=float, default=10, help="close after this long (default 10)")
 
     a = ap.parse_args()
+    if a.cmd == "music":
+        from . import music
+        if a.mcmd == "index":
+            music.run_index(a.library or music.LIBRARY, a.force)
+        else:
+            music.run_pick(a.tag, a.bpm, a.min, a.client, a.days, a.need_break)
+        return
     if a.cmd == "transcribe":
         from . import transcribe
         transcribe.run(a.folder, a.work, a.stems, a.force)

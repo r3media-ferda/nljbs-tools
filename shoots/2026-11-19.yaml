@@ -1,0 +1,62 @@
+# Pale Fire Basye, Nov 19 2026: Singo (music bingo) night. Built by `palefire cut shoots/2026-11-19.yaml [--preview]`.
+# v1 (2026-11-21). Ends on "let's do it"; the "Come on!" shot swung off her. Host's own lines only; Avery's off-camera "give me a big old come on?" and the flubbed closing line are out.
+#
+# Segments: [clip stem, a, b, kind, (scale % or {scale, end})]. kinds: talk, punch (115%), action (no dialogue),
+# react (picture only, camera audio muted), end. The bar's bingo songs play under everything on camera audio.
+
+shoot: "/Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/NOVEMBER/November 19th BAYSE "
+work: ~/r3-work/palefire/november_november_19th_bayse
+# Shot vertical with no rotation tag: every clip turns 90 degrees counter-clockwise.
+rotate: -90
+# AVE10313-10320 are 1080p Canon Log 3 (10-bit); AVE10367-10377 are 4K standard color and take no cube.
+lut: luts/nljbs/SHOPTALK_AVE_CanonLog3_BT709.cube
+clip_lut: {AVE10367: none, AVE10370: none, AVE10372: none, AVE10377: none}
+finish: "null"
+template_xml: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/VIDEO AUTOMATION /STIENHOLDING.xml
+music_db: {talk: -20, punch: -20, action: -8, react: -8, end: -10}
+snap_window: 0.30
+
+# The recognizer hears "Singo" as "single"; "a single row of five" is the real word, so fix phrases only.
+# "in May 6" is "at Basye" (CHECK with Avery).
+fix:
+  palefire: Pale Fire
+  pailfire: Pale Fire
+  in may 6: at Basye
+  we play single: we play Singo
+  first single: first Singo
+  bayzy: Basye
+  palefire single: Pale Fire Singo
+  come down to: Come down to
+
+reels:
+  - id: PF_1119_singo
+    title: Singo Thursdays at Pale Fire Basye
+    music: ES_WHAT! - Basixx.mp3      # from the music library (palefire music pick: party-upbeat, 115 BPM, break at 33 s)
+    payoff: 4                         # "first Singo of the night" lands on the track's break
+    break_at: 33.0
+    title_card: {text: SINGO THURSDAYS, until: 2}
+    # v3 (Avery, 2026-11-21): flash frames out (12-frame minimum), words end where the voice stops, sharp b-roll only,
+    # one b-roll shot over the round-one rules.
+    # v2 (Avery, 2026-11-21): cleaner shot at 0:08, b-roll cutaways over the open, bald-guy laugh out, Avery's voice off
+    # the cheers shot, "I have won" out (cut straight to the bartender), end on her outro line.
+    # broll: [clip, source s, at s into the segment, dur s] = picture over the segment's own audio.
+    segments:
+      - [AVE10313,   2.24,   3.60, talk]    # Good evening, Pale Fire!
+      - [AVE10313,   6.00,  10.08, punch,   # It's Thursday, and on Thursdays at Basye, we play Singo!
+         {broll: [[AVE10314, 131.0, 0.9, 1.3],      #   card on the table (sharp; v2's laughing woman was soft)
+                  [AVE10315,   2.5, 2.2, 1.4]]}]   #   another table marking cards; back to the host for "we play Singo!"
+      - [AVE10314, 162.0, 163.2, action]    # woman at her table with a beer (ends before the camera moves)
+      - [AVE10313,  40.85,  45.98, talk,    # Round one is a single row of five. So if you hear the song and you know it, mark it down.
+         {broll: [[AVE10314,  52.0, 3.3, 9.0]]}]   #   marker on a card, held to the end of the line (Avery v3)
+      - [AVE10367,  28.21,  31.01, punch]   # Okay, we're gonna see if we have our first Singo of the night.   (payoff)
+      - [AVE10316,   1.50,   4.00, react]   # cheers toast at the table (Avery's voice muted, music up)
+      - [AVE10367,  33.55,  33.90, talk]    # Congratulations!
+      - [AVE10319,   0.00,   1.60, action]  # bartender shaking (ends before the blur)
+      - [AVE10377,  19.50,  22.00, react]   # second winner celebrating with the host (gift-card talk muted)
+      - [AVE10377,  35.38,  41.70, talk,    # (opens at 35.28 s, past 3 blurred frames) Round three is the blackout round. That means you want to fill every square, top to bottom, side to side.
+         {start: 35.28, broll: [[AVE10314, 150.5, 3.0, 1.5],      #   card with an X on "fill every square"
+                  [AVE10314, 127.0, 4.5, 1.5]]}]   #   card on "top to bottom, side to side"
+      - [AVE10377,  45.75,  46.10, talk, {end: 47.0}]   # You guys ready? (arms up; ends before she walks out of frame at 48.1 s)
+      - [AVE10377,  59.58,  62.14, end,     # OUTRO: Come down to Basye and play Pale Fire Singo!
+         {end: 63.58, broll: [[AVE10316, 4.2, 0.0, 0.5]]}]   #   J-cut: the cheering table under "Come" while the
+                                                   #   camera whips onto her (blurred 59.47-59.60 s); ends before the blur at 63.63 s
