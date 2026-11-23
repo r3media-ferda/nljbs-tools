@@ -31,6 +31,15 @@ fix:
 reels:
   - id: PF_1119_singo
     title: Singo Thursdays at Pale Fire Basye
+    caption: |
+      Thursday nights at Basye hit different 🎤🍻
+
+      It's Singo night: music bingo where we play the song and you mark your card. Single rows, double rows, and a blackout round to finish it off, with prizes on the line for our winners.
+
+      We're also collecting new, unwrapped toys for Toys for Tots, so bring one along! 🎁
+
+      Come down to Pale Fire Basye and play Singo every Thursday 🎶👇
+    rella: {space: Pale Fire Basye, content_id: f2d7a5b2-3154-4f32-932f-d438c80e64f9, platforms: [instagram reel, facebook reel]}
     music: ES_WHAT! - Basixx.mp3      # from the music library (palefire music pick: party-upbeat, 115 BPM, break at 33 s)
     payoff: 4                         # "first Singo of the night" lands on the track's break
     break_at: 33.0

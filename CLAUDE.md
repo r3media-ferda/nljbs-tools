@@ -23,6 +23,15 @@ Work files (audio caches, frames, reports, draft XML) live in `~/nljbs-work/<dat
 - Artist handles come from the screen (OBS IG header) or transcript, never from memory.
 - Public text (titles, captions, descriptions) in NLJBS voice: casual, shop-floor. Never the word "swag".
 - Publishing is outward-facing: dry run first, Avery confirms before any real upload.
+- Rella: every post goes in with status PENDING, even when scheduled. A Pale Fire staff member reviews posts before they go live; APPROVED means she signed off, so never set it and never move a post out of it. Never turn on auto-publish.
+
+## Working together (Avery and Oz)
+
+Two people, two Macs, one repo: `github.com/r3media-ferda/nljbs-tools`.
+
+- Start every session with `git pull`. End every piece of work with a commit and `git push`, so the other person's Claude sees it.
+- Oz's editing expertise lives in `docs/OZ_EDITING_WORKFLOW.md`. Read it before cutting anything, alongside `docs/R3_SHORT_FORM_STYLE.md`. When Oz explains how he works, write it there and commit it.
+- Never commit tokens, passwords, client footage, or music audio. Footage stays on the drives; music audio stays on the Synology.
 
 ## XML (xmeml v4) invariants
 
@@ -51,11 +60,11 @@ Work files live in `~/r3-work/palefire/<slug>/`. Style rules: `docs/R3_SHORT_FOR
 - `palefire/beats.py` (+ `beats_worker.py`, runs under system `python3.14` with Beat This + torch) -> `music/<track>.beats.json`
 - `palefire/cut.py` vertical reels from `shoots/<date>.yaml` (segment kinds talk/punch/action/react/end, beat snapping, take joins, score counter, title card, Montserrat captions, b-roll cutaways over dialogue, `rotate:` for untagged vertical footage, `clip_lut:` per-clip cubes, `{start, end}` hard in/out points) -> XML, SRT, `--preview` MP4
   - Frame checks run before anything is written and stop the build: no shot under 12 frames, no soft or motion-blurred b-roll/action shots, no blurred frames at any shot's edges, speaker's face in frame at both ends of dialogue shots, and word ends measured from the audio (the ASR's end times run short). Never ship a reel that skips them; also eyeball 9 frames around every cut.
-- `palefire/music.py` `music index` / `music pick`: the shared music library (folder = tag), analyzed into `~/r3-work/music/`; `cut` takes a track name from it directly
+- `palefire/music.py` `music index` / `music pick`: the shared music library (folder = tag). Audio lives on the Synology at `/Volumes/2026/R3 MEDIA/MUSIC LIBRARY` (SMB share `2026` over Tailscale; `music/library.yaml` lists where to look). The index (`music/index.json`, `music/beats/`) is in the repo; after adding tracks, run `music index` and commit `music/`. `cut` takes a track name from the library directly.
 - `palefire/social.py` `social` (Instagram/Facebook Reels export + spec check) and `serve` (Cloudflare quick tunnel so Rella can import; `~/r3-work/bin/cloudflared`)
 - `shoots/` per-shoot cut plans with captions and Rella content IDs; `luts/` color cubes (relative `lut:` paths resolve against the repo); `scripts/style_measure.py` re-measures the house style (needs the ECC plugin)
 
-Order: `probe` -> `transcribe` + `beats` -> write `shoots/<date>.yaml` -> `cut --preview` -> Avery reviews -> `<id>_FINAL.mp4` -> `social` -> Rella draft, `serve`, attach -> Avery schedules and turns on auto-publish.
+Order: `probe` -> `transcribe` + `beats` -> write `shoots/<date>.yaml` -> `cut --preview` -> Avery reviews -> `<id>_FINAL.mp4` -> `social` -> Rella draft as PENDING, `serve`, attach -> the client's reviewer approves; people schedule and turn on auto-publish. Save each reel's caption and Rella content ID in its shoot plan.
 
 ## Validation
 
