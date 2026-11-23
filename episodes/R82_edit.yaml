@@ -53,6 +53,22 @@ mic_files:
   - /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/11.17.26/RECORDING 1/R82_AUDIO/mic 2_R82_LEVEL.wav
   - /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/11.17.26/RECORDING 1/R82_AUDIO/mic 3_R82_LEVEL.wav
 intro_music_gain_db: 1.4             # R81 intro levels measure -15.6 LUFS (peak -2.7) -> -14.2
+
+grade:                               # same camera bodies + looks as R81 (reels bake these; switcher stays raw)
+  lut_root: /Volumes/NLJBS Drive/canon-lut-202510
+  use_graded: false
+  cameras:
+    AVE14976:
+      label: AVE_CanonLog3_BT709
+      lut: BT709_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    093A7880:
+      label: 093A_CinemaGamut_BT709
+      lut: 3dlut/65grid-3dlut/full-to-full-range/CinemaGamut_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    C0001:                           # Sony, not log (user9 gamma): R81 level match
+      label: SONY_WIDE
+      filters: "colorlevels=rimin=0.157:gimin=0.157:bimin=0.157:rimax=0.627:gimax=0.627:bimax=0.627:romax=0.78:gomax=0.78:bomax=0.78,eq=saturation=1.4:gamma=1.0,colorbalance=rm=0.05:gm=-0.01:bm=-0.05"
 gap_boxes:                           # video stretches where the auto box misses (key = run after the gap, OBS px)
   47: [465, 100, 990, 1005]          # Taco Joe red piece playing (OBS 740-763)
   98: [378, 100, 1062, 1056]         # Deverson tiger zoomed in DMs (OBS 1192-1275); auto box caught the bottom half

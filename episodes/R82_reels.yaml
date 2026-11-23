@@ -1,0 +1,138 @@
+# R82 reels - R78 v3 format (handoff section 10). ranges: [approx mic time, first word, approx mic time, last word]
+# First range = cold open on the punchline. clamp = OBS seconds the tattoo shots may come from.
+edit: episodes/R82_edit.yaml
+start_date: 2026-11-26            # first Short; one a day at 18:00 ET (R81 ran through 11-25)
+exclude_obs: [[723.0, 741.5]]        # Taco Joe profile + grid scrolling (OBS s): never a tattoo shot
+grade_boost: "eq=saturation=1.06:brightness=0.015"   # on top of the camera's SHOPTALK LUT: reels run warm + bright
+fix:                               # ASR -> caption text
+  Grez: ""
+  drag: dragon
+  league.: sleeve.                 # the post caption: "4-5 cover-ups in this sleeve"
+  Diverson.: Deverson.
+  task.: tats.
+reels:
+  - id: "01"
+    slug: tacojoe-aztec-dragon
+    kind: tattoo
+    handle: tacojoetaco
+    clamp: [500.0, 720.0]
+    pool: [[562.0, 668.0]]           # the sleeve reel, whole-post views
+    title: Japanese-ish meets Aztec computer dragon
+    caption: "Finished sleeve by @tacojoetaco. Japanese-ish, Aztec, computer dragon, graffiti in the background. Colors packed in solid. Go down the rabbit hole."
+    tags: [taco joe, tacojoetaco, sleeve tattoo, japanese tattoo, color tattoo, shop talk, nljbs]
+    red: [WILD, JAPANESE, AZTEC, COMPUTER, DRAGON, SNAP, SOLID, CRUSHING, MAJOR, POPPING, BEAUTIFULLY, RABBIT, HOLE, REAL, CONTRAST, GOLD, BEAK]
+    ranges:
+      - [542.7, wild, 549.2, Dragon.]
+      - [508.0, Oh, 510.7, head.]
+      - [513.2, That, 514.0, solid.]
+      - [526.2, Jill, 532.5, shit.]
+      - [542.7, wild, 549.2, Dragon.]
+      - [554.2, "That's", 554.9, on.]
+      - [573.4, And, 576.2, beautifully.]
+      - [659.3, That, 663.1, beak.]
+      - [583.4, I, 586.0, real.]
+  - id: "02"
+    slug: tacojoe-right-amount-of-loud
+    kind: tattoo
+    handle: tacojoetaco
+    clamp: [680.0, 765.0]
+    # no pool: shots follow the screen in time (dragon talk -> runs 42-44, Burroughs/beaver -> the red biomech video)
+    title: Turned up to just the right amount of loud
+    caption: "More @tacojoetaco. The back of the dragon turns around like a video game, bubble clouds stacked, and a biomech piece with a beaver hiding in it."
+    tags: [taco joe, tacojoetaco, dragon tattoo, biomech tattoo, color tattoo, shop talk, nljbs]
+    red: [LOUDNESS, TURNED, UP, STACKS, BUBBLE, CLOUDS, DRAGON, VIDEO, GAME, STAIRCASE, COOL, BIOMECH, WILLIAM, BURROUGHS, BEAVER]
+    ranges:
+      - [713.3, "Everything's", 715.6, loudness.]
+      - [694.6, The, 700.7, game.]
+      - [701.3, It, 703.2, top.]
+      - [704.1, That, 707.5, cool.]
+      - [708.0, Yeah., 715.6, loudness.]
+      - [744.0, Oh, 754.3, beaver.]
+  - id: "03"
+    slug: jamestex-flip-flop
+    kind: tattoo
+    handle: jamestex
+    clamp: [836.0, 1064.0]
+    pool: [[836.0, 1062.0]]
+    title: It's got a flip-flop and everything
+    caption: "Skeleton leg by @jamestex. Black behind it so you see the inner ribs, a web pulling it back, mossy greens, and yes, a foot in a flip-flop."
+    tags: [jamestex, skeleton tattoo, leg tattoo, color tattoo, shop talk, nljbs]
+    red: [FLIP, FLOP, SKELETONS, SKELETON, WEIRD, NICE, THREE, DIMENSIONAL, RIBS, WEB, WILD, GREEN, MOSSY, DEPTH, NUTS, FOOT]
+    ranges:
+      - [972.2, "It's", 973.2, everything.]
+      - [834.8, Man, 836.6, fucking.]
+      - [843.8, Talking, 846.8, "nice?"]
+      - [850.5, How, 852.6, skeletons.]
+      - [853.4, And, 861.1, "know?"]
+      - [866.5, Oh, 867.9, wild.]
+      - [935.6, And, 940.1, Connor.]
+      - [941.8, The, 943.5, nuts.]
+      - [967.4, But, 969.4, first.]
+      - [972.2, "It's", 977.3, there.]
+      - [980.4, The, 981.3, flip-flop.]
+  - id: "04"
+    slug: deverson-means-business
+    kind: tattoo
+    handle: mattdeversontattoo
+    clamp: [1064.0, 1285.0]
+    pool: [[1084.0, 1284.0]]
+    title: Not your grocery store tattoo
+    caption: "Tiger sleeve by @mattdeversontattoo. Engulfed in flames, a loose Korean-style tiger blown up big. Wild, loud, aggressive. It means business."
+    tags: [matt deverson, mattdeversontattoo, tiger tattoo, sleeve tattoo, color tattoo, shop talk, nljbs]
+    red: [WILD, LOUD, AGGRESSIVE, MEANS, BUSINESS, ENGULFED, FLAMES, GIMME, FACE, TIGER, KOREAN, LOOSE, GROCERY, STORE]
+    ranges:
+      - [1201.3, "It's", 1204.6, business.]
+      - [1071.7, I, 1080.5, motherfucker.]
+      - [1096.5, Tiger, 1106.2, Tiger.]
+      - [1107.4, The, 1108.5, wild.]
+      - [1193.5, I, 1199.7, "saying?"]
+      - [1201.3, "It's", 1204.6, business.]
+  - id: "05"
+    slug: deverson-five-cover-ups
+    kind: tattoo
+    handle: mattdeversontattoo
+    clamp: [1064.0, 1285.0]
+    pool: [[1084.0, 1284.0]]
+    title: Five cover-ups in this sleeve
+    caption: "@mattdeversontattoo snuck four or five cover-ups into this sleeve. The tongue across the elbow, color broken up by its opposite, packed but readable."
+    tags: [matt deverson, mattdeversontattoo, cover up tattoo, tiger tattoo, sleeve tattoo, shop talk, nljbs]
+    red: [FOUR, FIVE, COVER, UPS, SLEEVE, FUCK, OUT, TRICKS, DIAGONAL, TONGUE, ELBOW, CLEVER, PACKED, READABLE, WORKED]
+    ranges:
+      - [1245.1, I, 1248.9, "fuck?"]
+      - [1205.5, "There's", 1207.3, too.]
+      - [1212.4, "Yeah,", 1217.0, smart.]
+      - [1223.8, "Yeah,", 1229.4, clever.]
+      - [1232.8, "That's", 1235.0, readable.]
+      - [1238.2, He, 1244.6, well.]
+      - [1245.1, I, 1251.5, worked.]
+      - [1450.6, Five, 1453.6, five.]
+  - id: "06"
+    slug: mark-bells-mom
+    kind: talk
+    title: Tattooing your buddy when his mom walks in
+    caption: "AC tattooed Mark Bell's forearm and both of them got nervous when his mom walked into the shop. Mark behaved for years. Now he's got Mike Wilson hand tats."
+    tags: [tattoo podcast, tattoo shop stories, shop talk, nljbs, alley cat tattoo]
+    red: [MOM, NERVOUS, SHOP, TROUBLE, MARK, BELL, FOREARM, GOOD, SON, HAM, HEAD, MIKE, WILSON, HAND, REAL, WIN, SHIT]
+    ranges:
+      - [1375.2, we, 1376.9, shop.]
+      - [1363.0, "Mark's", 1366.2, is.]
+      - [1367.9, Mark, 1370.8, son.]
+      - [1371.3, "Dude,", 1376.9, shop.]
+      - [1379.4, we, 1382.2, trouble]
+      - [1384.7, Oh, 1386.9, trouble.]
+      - [1391.4, Mark, 1396.6, is.]
+  - id: "07"
+    slug: thirty-year-reaper
+    kind: talk
+    title: Chunk Liddell, the 30-Year Reaper
+    caption: "Porter's got more nicknames than tattoos. Chrissy Big Tats, Chunk Liddell, and the one Nick won't let go: 30-Year Reaper. That's the book title."
+    tags: [tattoo podcast, tattoo artist, shop talk, nljbs, alley cat tattoo]
+    red: [CHUNK, LIDDELL, NEVER, DIE, REAPER, "30", YEAR, COOLEST, BOOK, TITLE, NICKNAMES, IDIOTS, STUPID, CHRISSY, BIG, TAT]
+    ranges:
+      - [1513.5, Chunk, 1518.6, it.]
+      - [1508.9, Chrissy, 1513.8, Liddell.]
+      - [1524.8, Chunk, 1526.0, Reaper.]
+      - [1527.4, You, 1535.7, Reaper.]
+      - [1537.1, I, 1539.4, from.]
+      - [1551.9, And, 1557.0, Reaper.]
+      - [1572.7, "There's", 1577.4, stupid.]
