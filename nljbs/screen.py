@@ -2,7 +2,8 @@
 
 Outputs in the work dir:
   obs_diff10.npy   mean abs frame difference at 10 fps (OBS time)
-  screen.json      [{"k", "a", "b", "box": [x0,y0,x1,y1] | null}]   a/b = OBS seconds
+  screen.json      [{"k", "a", "b", "box": [x0,y0,x1,y1] | null, "gap_box"?}]   a/b = OBS seconds;
+                   gap_box = post box measured inside the moving gap before this run (video playing)
   screen/NNN.jpg   full-res still per run;  screen/sheet_N.jpg review sheets with boxes drawn
 """
 import json
@@ -143,6 +144,23 @@ def run(episode_yaml):
             cv2.rectangle(t, (box[0] // 4, box[1] // 4), (box[2] // 4, box[3] // 4), (0, 255, 0), 2)
         cv2.putText(t, f"#{k} {a:.0f}-{b:.0f}s", (4, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
         tiles.append(t)
+    # Moving gaps (a video playing) get their own box from frames inside the gap: the layout often
+    # changes across a gap (R82: Google page -> IG reel), so the previous run's box can point at black page.
+    gdir = sdir / "gaps"; gdir.mkdir(exist_ok=True)
+    for i, r in enumerate(out):
+        g0 = out[i - 1]["b"] if i else 0.0
+        if r["a"] - g0 < 3.0:
+            continue
+        boxes = []
+        for f in (0.25, 0.5, 0.75):
+            t = g0 + f * (r["a"] - g0); jpg = gdir / f"{t:08.2f}.jpg"
+            if not jpg.exists():
+                subprocess.run([media.FFMPEG, "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", str(obs),
+                                "-frames:v", "1", "-q:v", "3", str(jpg)], check=True)
+            bx = detect_box(cv2.imread(str(jpg)))
+            if bx: boxes.append(bx)
+        if boxes:
+            r["gap_box"] = [int(v) for v in np.median(np.array(boxes), axis=0)]
     (work / "screen.json").write_text(json.dumps(out, indent=0))
     for s in range(0, len(tiles), 20):
         g = tiles[s:s + 20] + [np.zeros((270, 480, 3), np.uint8)] * (20 - len(tiles[s:s + 20]))
