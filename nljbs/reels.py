@@ -49,6 +49,8 @@ class Ctx:
         self.SRC, self.OFF = {}, {}
         for c in self.ep["cameras"]:
             k = {"ave": "AVE", "093a": "093A", "wide": "C"}[c["kind"]]
+            if self.E.get("two_shot_cam") == "093a":       # same role keys as the switcher
+                k = {"AVE": "093A", "093A": "AVE"}.get(k, k)
             self.SRC[k] = c["file"]; self.OFF[k] = -rep[Path(c["file"]).name]["offset_s"]   # source t = mic t + OFF
         self.SRC["OBS"] = self.ep["obs"][0]; self.OFF["OBS"] = -rep[Path(self.ep["obs"][0]).name]["offset_s"]
         names = [m["who"].upper() for m in self.ep["mics"]]

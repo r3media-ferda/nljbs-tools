@@ -1,0 +1,130 @@
+# R85 reels - R78 v3 format (handoff section 10). ranges: [approx mic time, first word, approx mic time, last word]
+# First range = cold open on the punchline. clamp / pool / exclude_obs = OBS seconds (OBS = mic + 1.5 on this recording).
+# Artist reels first (two per artist). Basketball reels come after, once the YouTube b-roll question is settled.
+edit: episodes/R85_edit.yaml
+start_date: 2026-12-03            # first Short; one a day at 18:00 ET (R82 ran through 12-02; R83/R84 had none)
+exclude_obs:                      # never a tattoo shot
+  - [1273.4, 1275.2]              # Candy post: right-click menu open
+  - [1410.5, 1419.0]              # Candy post: tooltip over the image
+  - [1528.5, 1537.0]              # cfhtattooer profile grid scrolling
+  - [1591.5, 1593.0]              # cfhtattooer profile grid
+grade_boost: "eq=saturation=1.06:brightness=0.015"   # on top of the camera's SHOPTALK LUT: reels run warm + bright
+fix:                               # ASR -> caption text
+  Horioshi-esque,: Horiyoshi-esque,
+  Chriz: Grizz
+  breaks.: brakes.
+  Allecat: Alley Cat
+  Allacat.: Alley Cat.
+  turtle: turtleneck,
+  act,: ""
+reels:
+  - id: "01"
+    slug: dalton-heart-girl
+    kind: tattoo
+    handle: mike_dalton_tattoo
+    clamp: [690.5, 775.0]
+    pool: [[694.5, 717.5], [719.5, 763.5]]   # heart girl, whole post on screen
+    title: The ton of red caught my eye
+    caption: "Heart girl by @mike_dalton_tattoo out of @greatlakestattoo. Painted on his flash sheet first, then on skin. Nick calls him the hero of Chicago, and the whole crew agrees."
+    tags: [mike dalton, mike_dalton_tattoo, great lakes tattoo, chicago tattoo, traditional tattoo, shop talk, nljbs]
+    red: [RED, HEART, DOPE, HERO, CHICAGO, DRAWN, WELL, LOVE, HANDS, SQUEEZE, STYLE, FACE, EYES, EYELASHES, PINK, GIBSON, GIRL]
+    ranges:
+      - [697.6, The, 700.5, dope.]
+      - [632.2, Mike, 635.1, Chicago.]
+      - [697.6, The, 700.5, dope.]
+      - [722.4, But, 726.7, well.]
+      - [727.7, I, 730.5, squeeze.]
+      - [751.2, "It's", 756.6, done.]
+      - [756.9, I, 757.7, too.]
+      - [765.9, like, 769.3, Girl]
+  - id: "02"
+    slug: dalton-cant-hide-it
+    kind: tattoo
+    handle: mike_dalton_tattoo
+    clamp: [775.5, 961.0]
+    # no pool: shots follow the screen in time (skull pieces -> the cobra Nick describes)
+    title: Simple tattoos can't hide a flaw
+    caption: "More @mike_dalton_tattoo. Clean, classic American, nailed. Simple only works when it's perfect, because the flaw jumps out and you can't hide it."
+    tags: [mike dalton, mike_dalton_tattoo, great lakes tattoo, american traditional, snake tattoo, shop talk, nljbs]
+    red: [FLAWED, SHIT, FLAW, JUMPS, HIDE, CLEAN, BEAUTIFULLY, EXECUTED, PERFECT, NAILED, FLUID, STREET, SIMPLICITY, DOPE, CLASSIC, AMERICAN, TONGUE, MONEY]
+    ranges:
+      - [822.2, But, 827.6, it.]
+      - [790.0, And, 796.2, nailed.]
+      - [801.1, And, 806.8, street.]
+      - [814.8, "I've", 821.9, dope.]
+      - [822.2, But, 827.6, it.]
+      - [833.7, I, 840.1, money.]
+  - id: "03"
+    slug: candy-pearl-diver-backpiece
+    kind: tattoo
+    handle: candikinyobi
+    clamp: [1103.5, 1410.0]
+    pool: [[1127.5, 1154.5], [1169.5, 1181.5], [1299.5, 1408.5]]   # full backpiece, close-up stills, full backpiece
+    title: That's my kind of tattoo right there
+    caption: "Tamatori hime backpiece by @candikinyobi. Big waves, water zoomed in past the usual, flow from armpit to ass, and the eyes looking down at the dragon. That's our kind of tattoo."
+    tags: [candikinyobi, candy kinyobi, japanese tattoo, backpiece, tamatori, shop talk, nljbs]
+    red: [KIND, TATTOO, ALL-TIME, FAVORITES, CANDY, GORGEOUS, WAVES, POWER, WATER, HORIYOSHI-ESQUE, ZOOMED, BIGGER, ARMPIT, ASS, SPLASH, BUTT, CHEEK, EYES, PERFECT, DRAGON]
+    ranges:
+      - [1181.2, "That's", 1182.5, boys.]
+      - [1104.0, this, 1111.1, gorgeous.]
+      - [1115.1, I, 1118.3, power.]
+      - [1126.1, Like, 1136.1, bigger,]
+      - [1153.9, "Yeah,", 1155.0, ass.]
+      - [1159.5, the, 1160.5, cheek.]
+      - [1173.6, Hers, 1179.2, well.]
+      - [1181.2, "That's", 1182.5, boys.]
+  - id: "04"
+    slug: candy-walked-into-alley-cat
+    kind: tattoo
+    handle: candikinyobi
+    clamp: [1103.5, 1410.0]
+    pool: [[1299.5, 1408.5], [1169.5, 1181.5], [1127.5, 1154.5]]
+    title: "Hey, I'm Candy. No shit."
+    caption: "The day @candikinyobi walked into Alley Cat and asked Nick for a picture. Now she's got her own place and she's crushing it. Love to see people succeed."
+    tags: [candikinyobi, candy kinyobi, alley cat tattoo, tattoo shop stories, shop talk, nljbs]
+    red: [CANDY, SHIT, AWESOME, HUMAN, OWN, PLACE, CRUSHING, ALLEY, CAT, BIG, FAN, PICTURE, BELIEVE, SUPER, NICE, IMPERIAL]
+    ranges:
+      - [1210.3, just, 1212.7, shit.]
+      - [1182.9, And, 1184.7, being.]
+      - [1185.9, You, 1191.2, it.]
+      - [1197.2, but, 1205.0, "me?"]
+      - [1205.3, I, 1206.3, it.]
+      - [1210.3, just, 1212.7, shit.]
+      - [1214.5, I, 1218.0, nice.]
+      - [1219.5, "Yeah,", 1222.1, Imperial.]
+  - id: "05"
+    slug: cfh-all-gas-no-brakes
+    kind: tattoo
+    handle: cfhtattooer
+    clamp: [1458.5, 1528.5]
+    pool: [[1462.5, 1476.5], [1478.5, 1490.5], [1496.5, 1527.5]]   # the cat, whole post
+    title: All gas, no brakes
+    caption: "Project Cat by @cfhtattooer. One-shots packed full of goodness, restful where they need to be, turned all the way up where they can. Red behind it and we don't care what the old guys said."
+    tags: [cfhtattooer, cowboy from hell, cat tattoo, traditional tattoo, color tattoo, shop talk, nljbs]
+    red: [ALL, GAS, BRAKES, COWBOY, HELL, PACKED, GOODNESS, RESTFUL, TURNED, UP, BLUE, EYES, CHIN, STYLE, CHROME, TRICKS, RED, INFECTED, HELL, DOPE]
+    ranges:
+      - [1523.7, "Yeah,", 1525.8, breaks.]
+      - [1423.9, This, 1425.3, Tattooer.]
+      - [1439.2, but, 1447.4, can.]
+      - [1452.9, but, 1458.1, that.]
+      - [1468.8, He, 1471.2, tricks.]
+      - [1474.1, just, 1485.7, infected.]
+      - [1492.4, Hell, 1493.8, dope.]
+      - [1523.7, "Yeah,", 1525.8, breaks.]
+  - id: "06"
+    slug: cfh-tie-dye-bucket-hat
+    kind: tattoo
+    handle: cfhtattooer
+    clamp: [1552.5, 1590.0]
+    pool: [[1552.5, 1555.5], [1558.5, 1560.5], [1564.5, 1572.5]]   # Schoolboy Q, whole post
+    title: The pattern inside a tiny bucket hat
+    caption: "Schoolboy Q by @cfhtattooer. Tie-dye bucket hat, patterned chain, smooth color and the yellow tips saved for last. Planning like that takes time."
+    tags: [cfhtattooer, cowboy from hell, schoolboy q tattoo, portrait tattoo, color tattoo, shop talk, nljbs]
+    red: [TIE-DYE, BUCKET, CAP, HAT, BANANAS, WILD, CHAIN, LARGE, PATTERN, SMALL, CRAZY, SMART, SMOOTHNESS, TIME, WRINKLES, TURTLENECK]
+    ranges:
+      - [1531.3, Look, 1534.0, dude.]
+      - [1538.5, "Yeah,", 1539.0, bananas.]
+      - [1541.5, And, 1553.4, "right?"]
+      - [1556.0, "That's", 1556.6, smart.]
+      - [1557.6, And, 1561.2, know.]
+      - [1575.2, Look, 1576.8, though.]
