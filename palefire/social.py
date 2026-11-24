@@ -9,6 +9,12 @@ Specs (Meta developer docs, checked 2026-11-20):
   Facebook Reels (Reels Publishing API): 3 to 90 s, 24-60 fps, 1080x1920 recommended (540x960 min), H.264, AAC 48 kHz.
 We encode to the overlap: H.264 High, 29.97 fps, video capped at 12 Mbps (half Instagram's limit, plenty for 1080p),
 AAC 128 kbps 48 kHz stereo, 3-90 s. A 60 s reel lands near 90 MB, well under every cap.
+Loudness: -14 LUFS integrated, true peak <= -1 dBTP (the house standard; see docs/OZ_EDITING_WORKFLOW.md, Audio).
+Platforms turn loud uploads down and never turn quiet ones up, so every export is measured, brought to -14 LUFS with
+gain + a peak limiter (re-measured after the AAC encode until it lands), and checked again in check().
+
+`palefire social <file.mp4>...` takes finished exports straight from Premiere too: <stem>_SOCIAL.mp4 goes in --out
+(default ~/r3-work/social), never next to the source on a client drive.
 
 Serving: Rella imports media only from a public https URL. `serve` copies the named files into a fresh folder,
 serves that folder alone on a free localhost port (bound in-process, so no other program can be behind the port),
@@ -33,14 +39,34 @@ import yaml
 from nljbs import media
 
 SPEC = dict(width=1080, height=1920, fps=(23.0, 60.0), vbr_max=12_000_000, dur=(3.0, 90.0),
-            size_max=300 * 1024 * 1024)
+            size_max=300 * 1024 * 1024, lufs=-14.0, lufs_tol=1.0, tp_max=-1.0)
+TP_AIM = -1.5  # loudnorm's analysis-pass target; only its input_* measurements are used
+SOCIAL_OUT = Path("~/r3-work/social").expanduser()
 CLOUDFLARED = Path("~/r3-work/bin/cloudflared").expanduser()
 
 
 # ---------- export ----------
 
+def loudness(path):
+    """EBU R128 measure of a file's audio: dict(I, TP, LRA, thresh, offset) from ffmpeg loudnorm's analysis pass."""
+    r = subprocess.run([media.FFMPEG, "-hide_banner", "-nostats", "-i", str(path), "-vn",
+                        "-af", f"loudnorm=I={SPEC['lufs']}:TP={TP_AIM}:LRA=11:print_format=json", "-f", "null", "-"],
+                       capture_output=True, text=True, check=True)
+    m = json.loads(r.stderr[r.stderr.rindex("{"):r.stderr.rindex("}") + 1])
+    return dict(I=float(m["input_i"]), TP=float(m["input_tp"]), LRA=float(m["input_lra"]),
+                thresh=float(m["input_thresh"]), offset=float(m["target_offset"]))
+
+
 def export(src, dst):
-    subprocess.run([media.FFMPEG, "-v", "error", "-y", "-i", str(src),
+    """Re-encode src to SPEC at -14 LUFS / <= -1 dBTP; returns the source loudness measured before.
+
+    The video is encoded once; the audio is then re-muxed onto it with gain + a fixed peak limiter, measured after
+    the AAC encode (which overshoots the limiter by a dB or so), and redone with corrected gain until it lands.
+    Same approach as nljbs reels: the limiter only tightens when the peaks miss, gain alone chases the loudness."""
+    src, dst = Path(src), Path(dst)
+    before = loudness(src)
+    video = dst.with_name(dst.stem + ".video.mp4")
+    subprocess.run([media.FFMPEG, "-v", "error", "-y", "-i", str(src), "-an",
                     "-c:v", "libx264", "-profile:v", "high", "-level", "4.1", "-preset", "slow",
                     "-crf", "18", "-maxrate", "12M", "-bufsize", "24M", "-flags", "+cgop", "-g", "60",
                     "-r", "30000/1001",
@@ -48,9 +74,26 @@ def export(src, dst):
                     # BT.709, so convert the levels and tag them rather than trust players to read the range flag
                     "-vf", f"scale={SPEC['width']}:{SPEC['height']}:in_range=auto:out_range=tv,format=yuv420p",
                     "-pix_fmt", "yuv420p", "-color_range", "tv", "-colorspace", "bt709",
-                    "-color_primaries", "bt709", "-color_trc", "bt709",
-                    "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2",
-                    "-movflags", "+faststart", "-use_editlist", "0", str(dst)], check=True)
+                    "-color_primaries", "bt709", "-color_trc", "bt709", str(video)], check=True)
+    gain = SPEC["lufs"] - before["I"]
+    try:
+        for lim in (0.80, 0.72, 0.64, 0.56):  # sample-peak ceiling: -1.9, -2.9, -3.9, -5.0 dBFS
+            for _ in range(4):
+                subprocess.run([media.FFMPEG, "-v", "error", "-y", "-i", str(video), "-i", str(src),
+                                "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
+                                "-af", f"volume={gain:.2f}dB,alimiter=limit={lim:.3f}:level=false:attack=2:release=40,"
+                                       "aresample=48000",
+                                "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2", "-shortest",
+                                "-movflags", "+faststart", "-use_editlist", "0", str(dst)], check=True)
+                got = loudness(dst)
+                if abs(got["I"] - SPEC["lufs"]) <= 0.3:
+                    break
+                gain += SPEC["lufs"] - got["I"]
+            if got["TP"] <= SPEC["tp_max"] - 0.1:
+                break
+    finally:
+        video.unlink(missing_ok=True)
+    return before
 
 
 def check(path):
@@ -86,7 +129,39 @@ def check(path):
         head = f.read(64 * 1024)
     if head.find(b"moov") < 0 or (0 <= head.find(b"mdat") < head.find(b"moov")):
         bad.append("moov atom not at the front")
-    return bad, dict(dur=dur, mb=size / 1e6, vmbps=int(v.get("bit_rate", 0)) / 1e6)
+    lu = loudness(path) if a is not None else None
+    if lu and abs(lu["I"] - SPEC["lufs"]) > SPEC["lufs_tol"]:
+        bad.append(f"loudness {lu['I']:.1f} LUFS (want {SPEC['lufs']:.0f} ±{SPEC['lufs_tol']:.0f})")
+    if lu and lu["TP"] > SPEC["tp_max"]:
+        bad.append(f"true peak {lu['TP']:+.1f} dBTP (cap {SPEC['tp_max']:.0f})")
+    return bad, dict(dur=dur, mb=size / 1e6, vmbps=int(v.get("bit_rate", 0)) / 1e6,
+                     lufs=lu["I"] if lu else None, tp=lu["TP"] if lu else None)
+
+
+def _report(src, dst):
+    """Export one file, check it, print a line; True when it passes."""
+    before = export(src, dst)
+    bad, st = check(dst)
+    print(f"{dst.name}: {st['dur']:.1f} s, {st['mb']:.0f} MB, video {st['vmbps']:.1f} Mbps, "
+          f"audio {before['I']:.1f} -> {st['lufs']:.1f} LUFS, peak {st['tp']:+.1f} dBTP  "
+          + ("OK for Instagram + Facebook Reels" if not bad else "PROBLEMS: " + "; ".join(bad)))
+    return not bad
+
+
+def run_files(files, out=None):
+    """Premiere exports (or any finished MP4s) -> <out>/<stem>_SOCIAL.mp4."""
+    out = Path(out).expanduser() if out else SOCIAL_OUT
+    out.mkdir(parents=True, exist_ok=True)
+    fails = 0
+    for f in map(Path, files):
+        if not f.is_file():
+            raise SystemExit(f"{f}: not a file")
+        dst = out / f"{f.stem}_SOCIAL.mp4"
+        if dst.resolve() == f.resolve():
+            raise SystemExit(f"{f}: output would overwrite the source")
+        fails += not _report(f, dst)
+    if fails:
+        raise SystemExit(f"{fails} file(s) fail the social spec")
 
 
 def run_social(plan_yaml, ids=None):
@@ -100,12 +175,7 @@ def run_social(plan_yaml, ids=None):
         if not src.exists():
             print(f"{reel['id']}: no {src.name}, skipped")
             continue
-        dst = cuts / f"{reel['id']}_SOCIAL.mp4"
-        export(src, dst)
-        bad, st = check(dst)
-        fails += bool(bad)
-        print(f"{dst.name}: {st['dur']:.1f} s, {st['mb']:.0f} MB, video {st['vmbps']:.1f} Mbps  "
-              + ("OK for Instagram + Facebook Reels" if not bad else "PROBLEMS: " + "; ".join(bad)))
+        fails += not _report(src, cuts / f"{reel['id']}_SOCIAL.mp4")
     if fails:
         raise SystemExit(f"{fails} file(s) fail the social spec")
 

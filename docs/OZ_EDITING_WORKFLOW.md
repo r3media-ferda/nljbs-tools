@@ -121,6 +121,7 @@ Rules for Claude:
   Platforms turn loud uploads down but don't turn quiet ones up. A -28 LUFS reel plays very quiet next to everything else in the feed. Above about -14 LUFS, the platform just turns it down and the peaks may crush.
 - **In Premiere:** tag dialogue and music in Essential Sound, use Auto-Duck on the music, and run Loudness Auto-Match to -14 LUFS when exporting (Export settings › Effects › Loudness Normalization, ITU BS.1770-3, -14 LUFS, -1 dBTP).
 - **Claude's builds:** `palefire cut --preview` already mixes to -14 LUFS / -1 dBTP.
+- **Oz's Premiere exports:** `palefire social "<final>.mp4"` makes a `_SOCIAL.mp4` copy in `~/r3-work/social/` at -14 LUFS and at most -1 dBTP, and reports the before and after. The source file isn't touched. Tested 2026-11-24 on WVJ FALL DECOR (-28.3 to -14.1 LUFS), TTT-WORLD SMALLEST (+1.2 dBTP peak brought to -1.8) and SMK PUMPKIN TREATS (-21.7 to -14.1).
 
 Sources (checked 2026-11-24): [vloggingpro.com audio loudness](https://vloggingpro.com/tools/audio-loudness/), [OpenClip audio normalization](https://openclip.app/learn/audio-normalization), [Gearnews on the loudness war](https://www.gearnews.com/loudness-war/), [Descript audio levels](https://www.descript.com/blog/article/how-to-set-the-perfect-audio-levels-for-video), [Vidpros on music too loud](https://vidpros.com/fix-background-music-too-loud-video/).
 

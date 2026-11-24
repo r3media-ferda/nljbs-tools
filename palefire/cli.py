@@ -40,9 +40,11 @@ def main():
     c.add_argument("ids", nargs="*", help="reel ids to build (default all)")
     c.add_argument("--preview", action="store_true", help="also render a graded preview MP4 with the music mix")
 
-    s = sub.add_parser("social", help="export <id>_SOCIAL.mp4 from <id>_FINAL.mp4 to Instagram/Facebook Reels spec")
-    s.add_argument("plan")
-    s.add_argument("ids", nargs="*", help="reel ids (default all)")
+    s = sub.add_parser("social", help="export <id>_SOCIAL.mp4 to Instagram/Facebook Reels spec at -14 LUFS, from a "
+                                      "shoot plan's <id>_FINAL.mp4 or from finished MP4s")
+    s.add_argument("plan", help="shoots/<date>.yaml, or one or more finished .mp4 files")
+    s.add_argument("ids", nargs="*", help="reel ids (default all), or more .mp4 files")
+    s.add_argument("--out", help="where MP4 inputs' _SOCIAL files go (default ~/r3-work/social)")
 
     v = sub.add_parser("serve", help="short-lived public links (Cloudflare quick tunnel) for Rella to import videos")
     v.add_argument("files", nargs="+")
@@ -66,7 +68,10 @@ def main():
         return
     if a.cmd == "social":
         from . import social
-        social.run_social(a.plan, a.ids)
+        if a.plan.lower().endswith(".mp4"):
+            social.run_files([a.plan] + a.ids, a.out)
+        else:
+            social.run_social(a.plan, a.ids)
         return
     if a.cmd == "serve":
         from . import social

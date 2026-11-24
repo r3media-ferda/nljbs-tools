@@ -65,7 +65,7 @@ Target from now: **-14 LUFS integrated, true peak at or below -1 dBTP**, the sam
 
 ## Delivery (Rella)
 
-`<id>_FINAL.mp4` is the master. Upload `<id>_SOCIAL.mp4` from `palefire social`: H.264 High, 29.97 fps, broadcast range BT.709, video capped at 12 Mbps, AAC 128 kbps 48 kHz, index at the front, 3 to 90 s. That meets Instagram Reels (25 Mbps, 128 kbps audio, 300 MB caps) and Facebook Reels (3 to 90 s). Canon MP4s are full range; the SOCIAL export converts them to broadcast range so platforms do not crush blacks.
+`<id>_FINAL.mp4` is the master. Upload `<id>_SOCIAL.mp4` from `palefire social`: H.264 High, 29.97 fps, broadcast range BT.709, video capped at 12 Mbps, AAC 128 kbps 48 kHz, -14 LUFS with true peak at or below -1 dBTP, index at the front, 3 to 90 s. That meets Instagram Reels (25 Mbps, 128 kbps audio, 300 MB caps) and Facebook Reels (3 to 90 s). Canon MP4s are full range; the SOCIAL export converts them to broadcast range so platforms do not crush blacks.
 
 Rella imports media only from a public link. `palefire serve <files>` serves only those files through a Cloudflare quick tunnel, checks each link, and closes after the import (or after 10 minutes). Captions and Rella content IDs live in the shoot plan (`caption:`, `rella:`). Drafts go in unscheduled with auto-publish off; Avery sets the date and turns on auto-publish.
 
