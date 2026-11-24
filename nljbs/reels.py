@@ -148,7 +148,7 @@ def plan(C, S):
         st = max(W[i]["t"] - 0.08, (W[i - 1]["end"] + 0.02) if i > 0 else 0)
         segs, cur = [], st
         for k in range(i, j):
-            if W[k + 1]["t"] - W[k]["end"] > 0.30:
+            if W[k + 1]["t"] - W[k]["end"] > S.get("gap", 0.30):      # longer pauses get cut; `gap:` lets one breathe
                 e = min(max(W[k]["end"] + 0.08, W[k]["t"] + 0.35), W[k + 1]["t"] - 0.08); s2 = W[k + 1]["t"] - 0.08
                 if s2 - e > 0.15: segs.append((cur, e, i, k)); cur = s2; i = k + 1
         e = min(W[j]["end"] + 0.08, (W[j + 1]["t"] - 0.03) if j + 1 < len(W) else W[j]["end"] + 0.08)
@@ -210,18 +210,21 @@ def plan(C, S):
         shots.append(dict(f0=0, f1=e, kind="F", who=spk_at(0))); x = e
         while x < NF:
             nc = next_change(x); rem = nc - x
-            e = nc if rem <= fr(3.6) else pick(x, 2.4, 3.6, 3.0)
+            lo, hi, tg = S.get("talk_hold", (2.4, 3.6, 3.0))      # `talk_hold:` longer holds = calmer pacing
+            e = nc if rem <= fr(hi) else pick(x, lo, hi, tg)
             shots.append(dict(f0=x, f1=e, kind="F", who=spk_at(x))); x = e
     else:
         e = pick(x, 0.7, 1.3, 1.0); shots.append(dict(f0=0, f1=e, kind="F", who=spk_at(0))); x = e; nxt = "T"
+        between = fr(S.get("face_between", 0))        # `face_between:` seconds of faces before the next post shot
         while x < NF:
             if nxt == "T":
-                e = pick(x, 2.2, 3.6, 3.0); shots.append(dict(f0=x, f1=e, kind="T")); nxt = "F"
+                e = pick(x, 2.2, 3.6, 3.0); shots.append(dict(f0=x, f1=e, kind="T")); nxt = "F"; since = 0
             else:
                 nc = next_change(x)
                 e = nc if fr(1.0) <= nc - x <= fr(2.6) else pick(x, 1.6, 2.6, 2.2)
                 if nc - x < fr(1.0) and nc < NF: e = max(nc, x + fr(0.6))
-                shots.append(dict(f0=x, f1=e, kind="F", who=spk_at(x))); nxt = "T"
+                shots.append(dict(f0=x, f1=e, kind="F", who=spk_at(x))); since += e - x
+                nxt = "T" if since >= between else "F"
             x = e
     sh_ = []
     for s in shots:

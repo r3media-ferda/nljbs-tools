@@ -99,8 +99,9 @@ reels:
     slug: cfh-all-gas-no-brakes
     kind: tattoo
     handle: cfhtattooer
-    clamp: [1458.5, 1528.5]
-    pool: [[1462.5, 1476.5], [1478.5, 1490.5], [1496.5, 1527.5]]   # the cat, whole post
+    clamp: [1458.5, 1491.0]
+    pool: [[1462.5, 1476.5], [1478.5, 1490.5]]   # the cat, whole tattoo (runs 77-80 zoom past the chain)
+    push_max: 1.03                   # barely push in, so the ears and chain stay in frame
     title: All gas, no brakes
     caption: "Project Cat by @cfhtattooer. One-shots packed full of goodness, restful where they need to be, turned all the way up where they can. Red behind it and we don't care what the old guys said."
     tags: [cfhtattooer, cowboy from hell, cat tattoo, traditional tattoo, color tattoo, shop talk, nljbs]
@@ -135,25 +136,24 @@ reels:
   - id: "07"
     slug: lebron-59-years-old
     kind: talk
+    talk_hold: [4.0, 6.0, 5.0]       # Avery: too many cuts; hold each speaker longer
+    gap: 0.6                         # keep Nick's pauses up to 0.6 s so the jokes land
     title: You're 59 years old, dog
     caption: "Nick is from an era where you raise your hand when you fall. LeBron is not. Porter has seen exactly one game in his life, and LeBron flopped in it."
     tags: [lebron james, lebron flop, nba, basketball debate, tattoo podcast, shop talk, nljbs]
     red: [59, YEARS, OLD, DOG, BEHAVING, RAISE, HAND, FELL, BAD, BULLSHIT, FLOPPING, PRETENDING, FOULEST, ANTI-LEBRON, FLOP, FLOPPED, CRAZY, BACK, BLOOD, LEBRON]
     ranges:
       - [397.4, "I'm", 401.9, "way?"]
-      - [344.6, "I'm", 345.9, fell.]
-      - [346.2, I, 347.7, bad.]
-      - [348.6, None, 349.1, bullshit.]
-      - [350.5, flopping, 351.0, pretending.]
+      - [344.6, "I'm", 351.0, pretending.]     # one take: era / "I fell" / no flopping
       - [355.6, The, 360.8, man.]
       - [366.4, I, 368.8, flopped.]
       - [381.5, and, 389.2, back.]
-      - [389.9, In, 396.9, blood.]
-      - [397.4, "I'm", 401.9, "way?"]
+      - [389.9, In, 401.9, "way?"]             # blood check straight into "59 years old"
       - [405.6, How, 409.1, "it?"]
   - id: "08"
     slug: bird-over-lebron
     kind: tattoo                     # "tattoo" shots here are the Bird vs LeBron graphic on screen; no handle card
+    face_between: 6.0                # Avery: too many stats cuts; ~6 s of faces between them
     clamp: [593.0, 617.5]
     pool: [[593.3, 598.3], [601.0, 604.8], [605.2, 617.3]]
     title: I'll take Bird over LeBron any day

@@ -50,6 +50,11 @@ run_boxes:                           # auto boxes caught search thumbnails; the 
   13: [1180, 224, 1630, 680]
   14: [1180, 224, 1630, 680]
   15: [1180, 224, 1630, 680]
+  72: [530, 195, 995, 840]           # Project Cat reel, whole tattoo (auto boxes cut the ears and the chain)
+  73: [440, 150, 1070, 1010]         # zoomed in
+  74: [440, 150, 1070, 1010]
+  75: [530, 195, 995, 840]
+  76: [530, 195, 995, 840]
 
 # Loudness (YouTube: -14 LUFS integrated, true peak <= -1 dBTP), from `nljbs levels`: cut mix -14.1 LUFS / -1.7 dBTP.
 mic_files:
