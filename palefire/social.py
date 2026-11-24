@@ -33,6 +33,7 @@ import tempfile
 import threading
 import time
 from pathlib import Path
+from urllib.parse import quote
 
 import yaml
 
@@ -224,7 +225,7 @@ def serve(files, minutes=10):
     port = httpd.server_address[1]
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     for f in files:
-        if not _head_ok(f"http://127.0.0.1:{port}/{f.name}", f.stat().st_size, timeout=5):
+        if not _head_ok(f"http://127.0.0.1:{port}/{quote(f.name)}", f.stat().st_size, timeout=5):
             httpd.shutdown()
             shutil.rmtree(root, ignore_errors=True)
             raise SystemExit(f"local check failed for {f.name}; no tunnel opened")
@@ -258,7 +259,7 @@ def serve(files, minutes=10):
         close()
     time.sleep(6)  # let the new hostname reach DNS before anyone asks for it
     for f in files:
-        url = f"{base}/{f.name}"
+        url = f"{base}/{quote(f.name)}"  # spaces in Premiere export names -> %20
         for _ in range(20):
             if _head_ok(url, f.stat().st_size, doh=True):
                 break
