@@ -268,6 +268,7 @@ def run(edit_yaml, deliver=False, variant=None):
     L10 = np.load(work / "levels.npy")
     Lmix = 10 * np.log10(np.sum(10 ** (L10 / 10), axis=0) + 1e-12)
     runs_scr = json.loads((work / "screen.json").read_text())
+    for r in runs_scr: r["box"] = (E.get("run_boxes") or {}).get(r["k"], r["box"])   # hand-measured boxes win
     diff = np.load(work / "obs_diff10.npy")
     oo = OFF["OBS"]
 

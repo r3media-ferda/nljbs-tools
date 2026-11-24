@@ -68,6 +68,7 @@ class Ctx:
         self.W = [dict(w=w["w"], t=w["t0"], end=w["t1"], s=self.CODE[w["spk"]]) for w in raw]
         hold = set(self.E.get("hold_runs", []))
         runs = json.loads((self.work / "screen.json").read_text())
+        for r in runs: r["box"] = (self.E.get("run_boxes") or {}).get(r["k"], r["box"])   # hand-measured boxes win
         diff = np.load(self.work / "obs_diff10.npy")
         self.LIVE = []                                            # (OBS a, OBS b, image box)
         prev = None

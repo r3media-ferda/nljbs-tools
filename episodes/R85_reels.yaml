@@ -1,6 +1,6 @@
 # R85 reels - R78 v3 format (handoff section 10). ranges: [approx mic time, first word, approx mic time, last word]
 # First range = cold open on the punchline. clamp / pool / exclude_obs = OBS seconds (OBS = mic + 1.5 on this recording).
-# Artist reels first (two per artist). Basketball reels come after, once the YouTube b-roll question is settled.
+# Artist reels 01-06 (two per artist), basketball reels 07-09 (cameras + the on-screen stats, no outside footage).
 edit: episodes/R85_edit.yaml
 start_date: 2026-12-03            # first Short; one a day at 18:00 ET (R82 ran through 12-02; R83/R84 had none)
 exclude_obs:                      # never a tattoo shot
@@ -17,6 +17,9 @@ fix:                               # ASR -> caption text
   Allacat.: Alley Cat.
   turtle: turtleneck,
   act,: ""
+  crazed: grazed
+  Perreault?: Porter?
+  of.: of
 reels:
   - id: "01"
     slug: dalton-heart-girl
@@ -128,3 +131,58 @@ reels:
       - [1556.0, "That's", 1556.6, smart.]
       - [1557.6, And, 1561.2, know.]
       - [1575.2, Look, 1576.8, though.]
+  # ---- basketball: cameras only, plus the Bird vs LeBron graphic Nick pulled up (Avery: no YouTube b-roll)
+  - id: "07"
+    slug: lebron-59-years-old
+    kind: talk
+    title: You're 59 years old, dog
+    caption: "Nick is from an era where you raise your hand when you fall. LeBron is not. Porter has seen exactly one game in his life, and LeBron flopped in it."
+    tags: [lebron james, lebron flop, nba, basketball debate, tattoo podcast, shop talk, nljbs]
+    red: [59, YEARS, OLD, DOG, BEHAVING, RAISE, HAND, FELL, BAD, BULLSHIT, FLOPPING, PRETENDING, FOULEST, ANTI-LEBRON, FLOP, FLOPPED, CRAZY, BACK, BLOOD, LEBRON]
+    ranges:
+      - [397.4, "I'm", 401.9, "way?"]
+      - [344.6, "I'm", 345.9, fell.]
+      - [346.2, I, 347.7, bad.]
+      - [348.6, None, 349.1, bullshit.]
+      - [350.5, flopping, 351.0, pretending.]
+      - [355.6, The, 360.8, man.]
+      - [366.4, I, 368.8, flopped.]
+      - [381.5, and, 389.2, back.]
+      - [389.9, In, 396.9, blood.]
+      - [397.4, "I'm", 401.9, "way?"]
+      - [405.6, How, 409.1, "it?"]
+  - id: "08"
+    slug: bird-over-lebron
+    kind: tattoo                     # "tattoo" shots here are the Bird vs LeBron graphic on screen; no handle card
+    clamp: [593.0, 617.5]
+    pool: [[593.3, 598.3], [601.0, 604.8], [605.2, 617.3]]
+    title: I'll take Bird over LeBron any day
+    caption: "Larry Bird told you where he was going to shoot from and then did it in your face. Stephen A takes prime Bird over LeBron. So does Nick. Pull up the stats."
+    tags: [larry bird, lebron james, nba, basketball debate, trash talk, shop talk, nljbs]
+    red: [BIRD, LEBRON, ANY, DAY, LARRY, TALKS, SHIT, FRONT, LEFT, JUMP, SHOT, GLASS, STEPHEN, PRIME, KILLER, FLOPPER, STYLE, FINESSE, TRASH, TALK, WHITE, CLOSE]
+    ranges:
+      - [594.1, "I'll", 595.9, day.]
+      - [473.9, "I've", 478.1, shit.]
+      - [479.3, And, 484.8, them.]
+      - [485.7, "Like,", 490.0, it.]
+      - [521.4, "Recently,", 526.1, LeBron.]
+      - [531.8, Larry, 533.5, killer.]
+      - [541.0, Bird, 541.6, flopper.]
+      - [588.4, And, 591.7, white.]
+      - [594.1, "I'll", 597.6, way.]
+      - [603.2, Shout, 603.8, Bird.]
+  - id: "09"
+    slug: jordan-smoked-him
+    kind: talk
+    title: Jordan still smoked him in every category
+    caption: "Stick around long enough and you get the scoring record. Porter doesn't follow sports, but he knows every LeBron post gets a reply from Jordan's people: No."
+    tags: [michael jordan, lebron james, kevin durant, nba goat debate, basketball, shop talk, nljbs]
+    red: [SMOKED, EVERY, CATEGORY, HIGHEST, SCORING, RECORD, HISTORY, NEVER, LEAVE, LEAGUE, JORDAN, BAZILLION, POINTS, SPORTS, GREAT, LEBRON, "NO.", KD, AMAZING]
+    ranges:
+      - [467.7, And, 469.1, category.]
+      - [410.6, You, 414.6, "saying?"]
+      - [415.0, If, 419.0, points.]
+      - [424.8, "I'm", 427.1, "anything,"]
+      - [432.2, Is, 441.5, No.]
+      - [459.7, "Bro,", 469.1, category.]
+      - [469.6, "It's", 469.8, amazing.]

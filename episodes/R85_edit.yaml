@@ -44,6 +44,12 @@ sections:
   - {id: S3, a: 1419.90, b: 1696.70, handle: cfhtattooer, card: {run: 72, avatar: [1005, 112, 1220, 160]}}         # Porter's pick: Cowboy From Hell
 hold_runs: [16, 17, 65, 71, 81, 82, 83, 84, 92]   # Mike Dalton portrait (split crops it to a wall poster), context menu / tooltip, cfhtattooer profile grids -> hold the last good post
 tattoo_only: []
+run_boxes:                           # auto boxes caught search thumbnails; the Bird vs LeBron graphic (OBS px)
+  11: [1180, 224, 1630, 680]
+  12: [990, 124, 1760, 890]          # zoomed in
+  13: [1180, 224, 1630, 680]
+  14: [1180, 224, 1630, 680]
+  15: [1180, 224, 1630, 680]
 
 # Loudness (YouTube: -14 LUFS integrated, true peak <= -1 dBTP), from `nljbs levels`: cut mix -14.1 LUFS / -1.7 dBTP.
 mic_files:
