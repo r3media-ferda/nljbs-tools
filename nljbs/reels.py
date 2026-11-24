@@ -70,13 +70,18 @@ class Ctx:
         self.LIVE = []                                            # (OBS a, OBS b, image box)
         prev = None
         for r in runs:
-            if prev and prev["box"] and prev["k"] not in hold and r["a"] - prev["b"] >= 3.0:
+            # tattoo video playing: box measured inside the gap (screen.py), not the previous layout's box
+            gbox = (self.E.get("gap_boxes") or {}).get(r["k"]) or r.get("gap_box") or (prev and prev["box"])
+            measured = (self.E.get("gap_boxes") or {}).get(r["k"]) or r.get("gap_box")
+            if prev and gbox and (measured or prev["k"] not in hold) and r["a"] - prev["b"] >= 3.0:
                 gseg = diff[int(prev["b"] * 10):int(r["a"] * 10)]
                 if len(gseg) and np.median(gseg) < 4.0:
-                    self.LIVE.append((prev["b"], r["a"], prev["box"]))          # tattoo video playing
+                    self.LIVE.append((prev["b"], r["a"], gbox))
             if r["k"] not in hold and r["box"]:
                 self.LIVE.append((r["a"], r["b"], r["box"]))
             prev = r
+        for xa, xb in self.R.get("exclude_obs", []) or []:      # e.g. profile grids scrolling: never a tattoo shot
+            self.LIVE = [(a, b, box) for a, b, box in self.LIVE if b <= xa or a >= xb]
         self.det = cv2.FaceDetectorYN.create(str(media.WORK_ROOT / "models" / "yunet.onnx"), "", (1920, 1080), 0.6)
         self.static = self._static_faces()
 
@@ -277,6 +282,7 @@ def plan(C, S):
                 ok = [t for t in cand if CL[0] <= t and t + D <= CL[1] and C.fits(t, D)]
                 if ok: o = ok[0]
                 else: still = True
+            if not C.boxat(o): still = True              # no live post here: hold the nearest one in the clamp
             if res and any(r["kind"] == "T" for r in res):
                 lastT = [r for r in res if r["kind"] == "T"][-1]
                 if lastT["box"] != C.boxat(o): z = 1.0
@@ -448,7 +454,7 @@ def assemble(C, Pl, files, ass_path, fonts, out_mp4):
     fl.append(f"[{cur}]ass={ass_path}:fontsdir={fonts}[v]")
     pre = C.tmp / f"{Pl['id']}_pre.mp4"; graph = C.tmp / f"{Pl['id']}_graph.txt"
     graph.write_text(";\n".join(fl))
-    sh([media.FFMPEG, "-v", "error", "-y"] + inputs + ["-i", str(mic_mix(C)), "-filter_complex_script", str(graph),
+    sh([media.FFMPEG, "-v", "error", "-y"] + inputs + ["-i", str(mic_mix(C)), "-/filter_complex", str(graph),
         "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "17", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-map_metadata", "-1", "-map_chapters", "-1",
         "-shortest", str(pre)], "assemble")

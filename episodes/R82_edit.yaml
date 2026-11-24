@@ -1,0 +1,96 @@
+# Shop Talk R82 (11.17.26 RECORDING 1): Nick (mic 1 / 093A), AC (mic 2 / AVE left), Porter (mic 3 / AVE right).
+# Mics: raw GarageBand takes copied out of NUMBER 1.band (Mic 1 #56, Mic 2 #56, Mic 3 #55) as mic 1-3.wav.
+# All times are seconds on the mic timeline (t=0 = start of the mic files).
+release: 82
+episode: ~/nljbs-work/11.17.26_RECORDING1/episode.yaml
+template: /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/10.26.26/RECORDING 3/ShopTalk_10-26-26_R81_SWITCHER_v3.xml   # R81 switcher (finished export doubles the intro music on 4 tracks)
+template_intro: [706, 1106]          # frames of the 400-frame intro package in the template
+template_ep: "ep:81"
+
+body: [277.30, 1595.30]              # "Boys, it's been a minute." .. Porter's "Peace."  (Hell's Junction pre-show dropped)
+outro: 1409.40                       # Nick: "That's the show. Anyway, shout out to those guys." -> cameras only
+
+roles: {solo: NICK, left: AC, right: PORTER}
+cast:
+  NICK:   {mic: 1, cam: 093A}
+  AC:     {mic: 2, cam: AVE}
+  PORTER: {mic: 3, cam: AVE}
+
+# Angle geometry. tight = [x0, y0, scale]: fill the frame from a (1920/s x 1080/s) window at x0,y0.
+faces:                               # YuNet, R82 frames 300-1300 s
+  AVE:  {AC: [625, 420], PORTER: [1415, 495]}
+  093A: {NICK: [1110, 360]}
+  C:    {NICK: [600, 345], AC: [1130, 352], PORTER: [1490, 460]}
+subject:                             # split-box framing: [subject centre x, min source width]
+  AVE: [1020, 1400]
+  093A: [1110, 900]
+  C: [1045, 1500]
+tights:
+  AC: [76, 214, 1.75]
+  PORTER: [866, 289, 1.75]
+  NICK: [372, 200, 1.3]              # Nick punch-in (angle 7)
+
+# Cutting style (Avery R81: more cuts than R76-R80, but keep some air)
+gap_max: 0.9
+gap_keep: 0.55
+cuts:
+  # Porter describes Steve Tiberi's unposted back piece from Norfolk ("I'm not gonna give too much away"),
+  # then Nick on mic: "Avery, as soon as it turns over, bleep". Cut the whole reveal (Avery confirmed 2026-11-23).
+  - [587.80, 646.35]                 # "Oh, man. I got. … so if I may segue … bleep, yeah," -> "so that background is"
+
+sections:
+  - {id: S1, a: 507.90, b: 834.60, handle: tacojoetaco, card: {run: 25, avatar: [340, 872, 540, 918]}}            # Nick's pick
+  - {id: S2, a: 834.60, b: 1062.80, handle: jamestex, card: {run: 56, avatar: [1005, 108, 1122, 158]}}           # AC's pick
+  - {id: S3, a: 1062.80, b: 1273.60, handle: mattdeversontattoo, card: {run: 87, avatar: [1305, 130, 1565, 198]}}  # Porter's pick, shown in DMs
+hold_runs: [22, 27, 29, 39, 44, 45, 46, 47]   # black loading frames, Taco Joe profile + grids -> hold the last good post
+tattoo_only: []
+
+# Loudness (YouTube: -14 LUFS integrated, true peak <= -1 dBTP). `nljbs levels` writes these from mic 1-3.wav:
+# hosts matched to each other, mix-bus compression + true-peak limiter shared across the three files.
+# Cut mix measured -14.2 LUFS / -1.7 dBTP; files are sample-aligned with the originals.
+mic_files:
+  - /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/11.17.26/RECORDING 1/R82_AUDIO/mic 1_R82_LEVEL.wav
+  - /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/11.17.26/RECORDING 1/R82_AUDIO/mic 2_R82_LEVEL.wav
+  - /Volumes/NLJBS Drive/WORKING SHOP TALM FILES/11.17.26/RECORDING 1/R82_AUDIO/mic 3_R82_LEVEL.wav
+intro_music_gain_db: 1.4             # R81 intro levels measure -15.6 LUFS (peak -2.7) -> -14.2
+
+grade:                               # same camera bodies + looks as R81 (reels bake these; switcher stays raw)
+  lut_root: /Volumes/NLJBS Drive/canon-lut-202510
+  use_graded: false
+  cameras:
+    AVE14976:
+      label: AVE_CanonLog3_BT709
+      lut: BT709_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    093A7880:
+      label: 093A_CinemaGamut_BT709
+      lut: 3dlut/65grid-3dlut/full-to-full-range/CinemaGamut_CanonLog3-to-BT709_WideDR_65_FF_Ver.2.0.cube
+      filters: "eq=contrast=1.06:saturation=1.15:gamma=0.98,colorbalance=rm=0.03:bm=-0.03"
+    C0001:                           # Sony, not log (user9 gamma): R81 level match
+      label: SONY_WIDE
+      filters: "colorlevels=rimin=0.157:gimin=0.157:bimin=0.157:rimax=0.627:gimax=0.627:bimax=0.627:romax=0.78:gomax=0.78:bomax=0.78,eq=saturation=1.4:gamma=1.0,colorbalance=rm=0.05:gm=-0.01:bm=-0.05"
+gap_boxes:                           # video stretches where the auto box misses (key = run after the gap, OBS px)
+  47: [465, 100, 990, 1005]          # Taco Joe red piece playing (OBS 740-763)
+  98: [378, 100, 1062, 1056]         # Deverson tiger zoomed in DMs (OBS 1192-1275); auto box caught the bottom half
+
+trailer:                             # [a, b, angle, card]  angles: 1 AC+PORTER, 2 NICK, 3 WIDE, 4 SPLIT AVE, 5 SPLIT NICK,
+                                     #   6 SPLIT WIDE, 7 NICK PUNCH, 8 TATTOO ONLY, 9 AC TIGHT, 10 PORTER TIGHT
+  - [1194.70, 1199.80, 5, mattdeversontattoo]   # Nick: "people aren't used to a tattoo like that just rolling up to the fucking line at the grocery store."
+  - [1201.30, 1204.80, 7, null]                 # Nick: "It's wild, it's loud, it's aggressive, it means business."
+  - [542.60, 549.60, 5, tacojoetaco]            # Nick: "wild fucking… Japanese-ish. Meets Aztec … Computer Dragon."
+  - [746.10, 754.50, 6, tacojoetaco]            # Porter: "Is that a biomech William S. Burroughs?" / "there's a beaver on there."
+  - [972.20, 975.10, 3, null]                   # "It's got a flip-flop and everything. Did you flip it?"
+  - [1245.00, 1249.40, 1, null]                 # Porter: "four or five cover-ups in this sleeve." "Get the fuck out. What the fuck?"
+  - [1459.60, 1463.10, 2, null]                 # Nick: "Let them know that sucky tattoos are for sucky people." -> intro
+
+shoutouts:                           # template graphic name -> [a, b]
+  "@NOLIESJUSTBULLSHIT": [1476.40, 1480.70]
+  "@aeconner": [1484.30, 1488.00]
+  "@ALLEYCATTATTOO": [1488.00, 1491.90]
+  Porter_electric: [1492.70, 1497.00]
+
+images:                              # placeholder slots for Avery's images: [a, dur, side, label]
+  - [310.10, 3.5, right, "Blues Brothers bridge, Chicago"]
+  - [366.20, 3.0, right, "The Jesus Rock"]
+  - [447.70, 4.0, right, "The Green Mill jazz club, Chicago"]
+  - [1296.20, 4.0, right, "Tate's neck heart by Jesse Struthers"]

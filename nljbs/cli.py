@@ -45,7 +45,14 @@ def main():
     re_.add_argument("--deliver", action="store_true", help="copy R<NN>_REELS to the recording folder (new folder only)")
     re_.add_argument("--verify-only", action="store_true")
 
+    lv = sub.add_parser("levels", help="speaker-matched mic files, cut mix at -14 LUFS / -1.5 dBTP")
+    lv.add_argument("edit")
+
     a = ap.parse_args()
+    if a.cmd == "levels":
+        from . import levels
+        levels.run(a.edit)
+        return
     if a.cmd == "reels":
         from . import reels
         reels.run(a.reels, a.ids, deliver=a.deliver, only_verify=a.verify_only)

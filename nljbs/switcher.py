@@ -30,9 +30,18 @@ INTRO = 400
 TK = 8475667200          # pproTicks per frame at 29.97 (254016000000 / FPS)
 W_, H_ = 1920, 1080
 
-ANG_NAMES = ["1 AC + JAKE", "2 PORTER", "3 WIDE", "4 SPLIT - AC + JAKE + TATTOO", "5 SPLIT - PORTER + TATTOO",
-             "6 SPLIT - WIDE + TATTOO", "7 PORTER PUNCH", "8 TATTOO ONLY", "9 AC TIGHT", "10 JAKE TIGHT"]
-# angle indices (0-based)
+# Seating: `solo` is alone on 093A, `left`/`right` share AVE. R76-R81 default: Porter solo, AC + Jake on AVE.
+DEFAULT_ROLES = {"solo": "PORTER", "left": "AC", "right": "JAKE"}
+
+
+def angle_names(roles):
+    s, l, r = roles["solo"], roles["left"], roles["right"]
+    return [f"1 {l} + {r}", f"2 {s}", "3 WIDE", f"4 SPLIT - {l} + {r} + TATTOO", f"5 SPLIT - {s} + TATTOO",
+            "6 SPLIT - WIDE + TATTOO", f"7 {s} PUNCH", "8 TATTOO ONLY", f"9 {l} TIGHT", f"10 {r} TIGHT"]
+
+
+ANG_NAMES = angle_names(DEFAULT_ROLES)
+# angle indices (0-based). A_POR = the solo 093A angle, A_AC_T / A_JAKE_T = AVE left / right tights.
 A_TWO, A_POR, A_WIDE, A_SPL_TWO, A_SPL_POR, A_SPL_WIDE, A_POR_PUNCH, A_TAT, A_AC_T, A_JAKE_T = range(10)
 
 
@@ -200,6 +209,8 @@ def image_slot_png(out, label, side):
 # ---------------------------------------------------------------- main build
 def run(edit_yaml, deliver=False, variant=None):
     E = yaml.safe_load(Path(edit_yaml).read_text())
+    ROLES = {**DEFAULT_ROLES, **(E.get("roles") or {})}
+    ANG_NAMES = angle_names(ROLES)
     ep = yaml.safe_load(Path(os.path.expanduser(E["episode"])).read_text())
     work = Path(ep["work_dir"]); rec = Path(ep["recording_folder"])
     rel = E["release"]; mm, dd, yy = ep["recording_date"].split(".")
@@ -228,8 +239,9 @@ def run(edit_yaml, deliver=False, variant=None):
             FILES[k] = str(gp)
     mic_dur = min(m["duration"] for m in probe["mics"].values())
     MICS = []
+    mic_files = E.get("mic_files") or []          # level-matched copies from `nljbs levels` (same timeline)
     for i, m in enumerate(ep["mics"], 1):
-        k = f"M{i}"; FILES[k] = m["file"]; OFF[k] = 0.0
+        k = f"M{i}"; FILES[k] = mic_files[i - 1] if mic_files else m["file"]; OFF[k] = 0.0
         NATIVE[k] = (30, "TRUE", int(mic_dur * FPS)); MICS.append((k, f"MIC {i} {m['who'].upper()}"))
     names = [m["who"].upper() for m in ep["mics"]]
 
@@ -262,10 +274,12 @@ def run(edit_yaml, deliver=False, variant=None):
             if b <= sa or a >= sb:
                 prev_end, prev_box = b, (r["box"] if r["k"] not in hold_k and r["box"] else prev_box); continue
             # moving gap before this run: a video post if it moves steadily for >= 3 s
-            if prev_end is not None and prev_box and a - prev_end >= 3.0:
+            # box measured inside the gap (screen.py gap_box); the previous run's box can sit on another layout
+            gbox = (E.get("gap_boxes") or {}).get(r["k"]) or r.get("gap_box") or prev_box
+            if prev_end is not None and gbox and a - prev_end >= 3.0:
                 g = diff[int((prev_end - oo) * 10):int((a - oo) * 10)]
                 if len(g) and np.median(g) < 4.0:
-                    live.append([max(sa, prev_end), min(sb, a), prev_box])
+                    live.append([max(sa, prev_end), min(sb, a), gbox])
             if r["k"] not in hold_k and r["box"]:
                 live.append([max(sa, a), min(sb, b), r["box"]])
                 prev_box = r["box"]
@@ -323,7 +337,7 @@ def run(edit_yaml, deliver=False, variant=None):
     cam_of = {n: E["cast"][n]["cam"] for n in names}
     full_ang = {"093A": A_POR, "AVE": A_TWO, "C": A_WIDE}
     split_ang = {"093A": A_SPL_POR, "AVE": A_SPL_TWO, "C": A_SPL_WIDE}
-    punch_ang = {"PORTER": A_POR_PUNCH, "AC": A_AC_T, "JAKE": A_JAKE_T}
+    punch_ang = {ROLES["solo"]: A_POR_PUNCH, ROLES["left"]: A_AC_T, ROLES["right"]: A_JAKE_T}
 
     shots, nshort = [], Counter()
     alt_cycle = ["wide", "react", "punch"]; ai = 0
@@ -521,8 +535,8 @@ def run(edit_yaml, deliver=False, variant=None):
     FULLSC = {"AVE": full(), "093A": full(), "C": full()}
     ANG = [("full", "AVE", full()), ("full", "093A", full()), ("full", "C", full()),
            ("A", "AVE", None), ("A", "093A", None), ("A", "C", None),
-           ("full", "093A", tight(*T["PORTER"])), ("T", "C", None),
-           ("full", "AVE", tight(*T["AC"])), ("full", "AVE", tight(*T["JAKE"]))]
+           ("full", "093A", tight(*T[ROLES["solo"]])), ("T", "C", None),
+           ("full", "AVE", tight(*T[ROLES["left"]])), ("full", "AVE", tight(*T[ROLES["right"]]))]
     PIECES = []
     for S in SECT:
         for p in S["pieces"]:
@@ -617,6 +631,11 @@ def run(edit_yaml, deliver=False, variant=None):
             for tag in ("start", "end"):
                 e = cc.find(tag)
                 if e is not None and int(e.text) >= 0: e.text = str(int(e.text) + dt)
+            if kind == "audio" and E.get("intro_music_gain_db"):   # match the intro to the levelled mics
+                k_ = 10 ** (E["intro_music_gain_db"] / 20)
+                for p in cc.iter("parameter"):
+                    if p.findtext("parameterid") == "level" and p.find("value") is not None:
+                        p.find("value").text = f"{float(p.findtext('value')) * k_:.6f}"
             # HARD RULE also for intro b-roll: camera clipitem name = file name
             fe2 = cc.find("file")
             fdef = fe2 if fe2 is not None and len(fe2) else (Ffiles.get(fe2.get("id")) if fe2 is not None else None)
