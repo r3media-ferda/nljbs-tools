@@ -105,7 +105,9 @@ def run(folder, work=None):
             if d < longest - 120:
                 flags.append(f"{n}: {d/60:.1f} min vs longest {longest/60:.1f} min, stops early")
 
-    end_time = max(p.stat().st_mtime for p in videos) if videos else 0
+    # OBS runs on the Mac clock; camera clocks drift (11.23.26 Canons ran an hour ahead)
+    clock = found.get("obs") or videos
+    end_time = max(p.stat().st_mtime for p in clock) if clock else 0
     mics = {}
     exports = found.get("mic_export", [])
     if exports:

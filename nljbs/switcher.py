@@ -223,6 +223,8 @@ def run(edit_yaml, deliver=False, variant=None):
     SRC, OFF, NATIVE, FILES = {}, {}, {}, {}
     for c in ep["cameras"]:
         k = {"ave": "AVE", "093a": "093A", "wide": "C"}[c["kind"]]
+        if E.get("two_shot_cam") == "093a":            # keys are roles: "AVE" = two-shot body, "093A" = solo body
+            k = {"AVE": "093A", "093A": "AVE"}.get(k, k)
         SRC[k] = c["file"]
     SRC["OBS"] = ep["obs"][0]
     graded = (E.get("grade") or {}).get("use_graded")
@@ -441,6 +443,7 @@ def run(edit_yaml, deliver=False, variant=None):
     Image.new("RGB", (W_, H_), (0, 0, 0)).save(plates / f"R{rel}_black.png")
     for S in SECT:
         c = S["card"]; outp = plates / f"card_{S['handle']}.png"
+        if not c: continue                         # card: null -> screen section with no handle (stats, search)
         if c.get("typed"):
             card_png(outp, typed="@" + S["handle"])
         else:
@@ -455,7 +458,8 @@ def run(edit_yaml, deliver=False, variant=None):
     def still(k): return k.startswith(("BG", "WH", "BK", "CARD_", "H_", "IMG_"))
     FILES.update({"BG": BASE_PL / f"R{rel}_backdrop.png", "WH": BASE_PL / f"R{rel}_white.png",
                   "BK": BASE_PL / f"R{rel}_black.png"})
-    for S in SECT: FILES["CARD_" + S["handle"]] = BASE_PL / f"card_{S['handle']}.png"
+    for S in SECT:
+        if S["card"]: FILES["CARD_" + S["handle"]] = BASE_PL / f"card_{S['handle']}.png"
     for _, fn in holds: FILES["H_" + fn] = BASE_PL / "holds" / fn
     for i in range(len(E.get("images", []))): FILES[f"IMG_{i + 1:02d}"] = BASE_PL / f"image_{i + 1:02d}.png"
     for k in FILES:
@@ -670,6 +674,7 @@ def run(edit_yaml, deliver=False, variant=None):
             tr.append(card_item(Tt["card"], Tt["start"], Tt["end"], dx_of(Tt["card"]) if Tt["ang"] == A_TAT else 0))
     cards = []
     for S in SECT:
+        if not S["card"]: continue
         a = g2main(max(0, G(S["a"]))); b = g2main(min(NB, G(S["b"])))
         cps = [a] + sorted({x for f_ in FINAL if f_["ang"] == A_TAT and f_["end"] > a and f_["start"] < b
                             for x in (max(a, f_["start"]), min(b, f_["end"]))}) + [b]
