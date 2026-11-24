@@ -86,10 +86,13 @@ shoutouts:                           # template graphic name -> [a, b]
   "@ALLEYCATTATTOO": [1754.20, 1757.50]
   Porter_electric: [1767.60, 1771.40]
 
-images:                              # placeholder slots for Avery's images: [a, dur, side, label]
+images:                              # image slots: [a, dur, side, label, photo]; no photo -> placeholder for Avery
   - [356.40, 3.5, right, "LeBron James flop"]
   - [465.40, 4.0, right, "Jordan vs LeBron vs KD stat comparison"]
   - [496.00, 4.0, right, "Larry Bird on Cheers (with Woody Harrelson)"]
   - [571.20, 4.0, right, "Muggsy Bogues standing next to Alonzo Mourning"]
-  - [897.50, 4.0, right, "Brandon's basement tiki bar, Chicago"]
+  # Nick's photos from Brandon's basement bar, Chicago (photos live in the work dir, not the repo)
+  - [888.00, 6.0, left, "Brandon's basement bar", ~/nljbs-work/11.23.26_RECORDING1/photos/chicago_bar.jpg]       # "It's in his basement… that's where we kicked it"
   - [909.70, 3.5, right, "Chicago pizzeria Dave Portnoy rated (by Great Lakes Tattoo)"]
+  - [920.40, 5.5, right, "Recording at Brandon's bar", ~/nljbs-work/11.23.26_RECORDING1/photos/chicago_recording.jpg]  # "stoked that Dalton did it, down to talk"
+  - [931.40, 7.0, right, "The crew at Brandon's bar", ~/nljbs-work/11.23.26_RECORDING1/photos/chicago_group.jpg]      # "long career together… glued together for so long"

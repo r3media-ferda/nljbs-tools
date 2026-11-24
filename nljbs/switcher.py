@@ -21,7 +21,7 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 import yaml
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 from . import media
 
@@ -184,12 +184,23 @@ def card_png(out, header_img=None, typed=None):
     card.save(out)
 
 
-def image_slot_png(out, label, side):
-    """Placeholder for Avery's image: white-bordered box with the label. Replace in Premiere."""
+def img_name(i, photo):
+    return f"image_{i + 1:02d}" + (f"_{Path(photo[0]).stem}" if photo else "") + ".png"
+
+
+def image_slot_png(out, label, side, photo=None):
+    """Placeholder for Avery's image: white-bordered box with the label. Replace in Premiere.
+    With a photo: the photo fit inside the same 640 px box, same white border."""
     img = Image.new("RGBA", (W_, H_), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
     bw, size = 8, 640
     x0 = 1880 - size if side == "right" else 40
     y0 = 200
+    if photo:
+        ph = ImageOps.exif_transpose(Image.open(os.path.expanduser(photo))).convert("RGB")
+        ph.thumbnail((size - 2 * bw, size - 2 * bw), Image.LANCZOS)
+        w, h = ph.size; px = x0 + size - bw - w if side == "right" else x0 + bw; py = y0 + (size - h) // 2
+        d.rectangle((px - bw, py - bw, px + w + bw - 1, py + h + bw - 1), fill=(255, 255, 255, 255))
+        img.paste(ph, (px, py)); img.save(out); return
     d.rectangle((x0, y0, x0 + size, y0 + size), fill=(255, 255, 255, 255))
     d.rectangle((x0 + bw, y0 + bw, x0 + size - bw, y0 + size - bw), fill=(40, 40, 44, 235))
     f1, f2 = font(54), font(30, bold=False)
@@ -371,7 +382,7 @@ def run(edit_yaml, deliver=False, variant=None):
 
     # overrides: tattoo-only beats, image slots (force the speaker's full camera so the image has room)
     over = [(a, b, A_TAT) for a, b in E.get("tattoo_only", [])]
-    for a, dur, side, label in E.get("images", []):
+    for a, dur, side, label, *_ in E.get("images", []):
         spk = next((s for x, y, s in runs if x <= a < y), names[0])
         cam = cam_of[spk]
         ang = full_ang[cam]
@@ -451,8 +462,8 @@ def run(edit_yaml, deliver=False, variant=None):
             card_png(outp, header_img=im.crop(tuple(c["avatar"])))
     for t_obs, fn in holds:
         grab(SRC["OBS"], t_obs, plates / "holds" / fn)
-    for i, (a, dur, side, label) in enumerate(E.get("images", [])):
-        image_slot_png(plates / f"image_{i + 1:02d}.png", label, side)
+    for i, (a, dur, side, label, *ph) in enumerate(E.get("images", [])):
+        image_slot_png(plates / img_name(i, ph), label, side, ph[0] if ph else None)
 
     BASE_PL = rec / PL_NAME
     def still(k): return k.startswith(("BG", "WH", "BK", "CARD_", "H_", "IMG_"))
@@ -461,7 +472,7 @@ def run(edit_yaml, deliver=False, variant=None):
     for S in SECT:
         if S["card"]: FILES["CARD_" + S["handle"]] = BASE_PL / f"card_{S['handle']}.png"
     for _, fn in holds: FILES["H_" + fn] = BASE_PL / "holds" / fn
-    for i in range(len(E.get("images", []))): FILES[f"IMG_{i + 1:02d}"] = BASE_PL / f"image_{i + 1:02d}.png"
+    for i, e in enumerate(E.get("images", [])): FILES[f"IMG_{i + 1:02d}"] = BASE_PL / img_name(i, e[4:])
     for k in FILES:
         if still(k): NATIVE[k] = (30, "TRUE", 107892)
 
@@ -712,7 +723,7 @@ def run(edit_yaml, deliver=False, variant=None):
 
     # V13: image-insert placeholders
     tr = ET.SubElement(vid, "track"); imgs = []
-    for i, (a, dur, side, label) in enumerate(E.get("images", [])):
+    for i, (a, dur, side, label, *_) in enumerate(E.get("images", [])):
         s_ = g2main(G(a)); e_ = g2main(G(a + dur))
         if e_ - s_ < 15: continue
         c = clip(f"IMG_{i + 1:02d}", s_, e_, None, name=f"IMAGE {i + 1:02d}: {label}"); c.find("out").text = str(e_ - s_)
