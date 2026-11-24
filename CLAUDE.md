@@ -11,7 +11,7 @@ cd ~/Code/nljbs-tools
 .venv/bin/nljbs sync ~/nljbs-work/<date>_RECORDINGN/episode.yaml --deliver  # also copy XML to the recording folder
 ```
 
-Python 3.14 venv in `.venv`. ffmpeg/ffprobe come from the `static-ffmpeg` package (no Homebrew on this Mac).
+Python venv in `.venv` (3.15 on Oz's Mac, 3.14 on Avery's; both work). ffmpeg/ffprobe come from the `static-ffmpeg` package (no Homebrew on this Mac).
 Work files (audio caches, frames, reports, draft XML) live in `~/nljbs-work/<date>_<recording>/`, never on the drive.
 
 ## Hard rules
@@ -57,7 +57,7 @@ Work files live in `~/r3-work/palefire/<slug>/`. Style rules: `docs/R3_SHORT_FOR
 
 - `palefire/probe.py` shoot inventory (dedupe, clock fix, scenes, Log detection) -> `shoot.yaml`, contact sheet
 - `palefire/transcribe.py` Parakeet per camera clip -> `transcripts/<stem>.words.json` + `.txt`
-- `palefire/beats.py` (+ `beats_worker.py`, runs under system `python3.14` with Beat This + torch) -> `music/<track>.beats.json`
+- `palefire/beats.py` (+ `beats_worker.py`, runs under system `python3.15` or `python3.14`, whichever is installed, with Beat This + torch; `PALEFIRE_BEAT_PYTHON` overrides) -> `music/<track>.beats.json`
 - `palefire/cut.py` vertical reels from `shoots/<date>.yaml` (segment kinds talk/punch/action/react/end, beat snapping, take joins, score counter, title card, Montserrat captions, b-roll cutaways over dialogue, `rotate:` for untagged vertical footage, `clip_lut:` per-clip cubes, `{start, end}` hard in/out points) -> XML, SRT, `--preview` MP4
   - Frame checks run before anything is written and stop the build: no shot under 12 frames, no soft or motion-blurred b-roll/action shots, no blurred frames at any shot's edges, speaker's face in frame at both ends of dialogue shots, and word ends measured from the audio (the ASR's end times run short). Never ship a reel that skips them; also eyeball 9 frames around every cut.
 - `palefire/music.py` `music index` / `music pick`: the shared music library (folder = tag). Audio lives on the Synology at `/Volumes/2026/R3 MEDIA/MUSIC LIBRARY` (SMB share `2026` over Tailscale; `music/library.yaml` lists where to look). The index (`music/index.json`, `music/beats/`) is in the repo; after adding tracks, run `music index` and commit `music/`. `cut` takes a track name from the library directly.

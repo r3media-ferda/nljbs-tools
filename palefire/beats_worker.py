@@ -1,6 +1,6 @@
 """Beat This on each track in a folder. Run by `palefire beats` under the Python that has beat_this + torch.
 
-usage: python3.14 beats_worker.py <ffmpeg> <music folder> <out dir> [--force]
+usage: python3.15 beats_worker.py <ffmpeg> <music folder> <out dir> [--force]
 Writes <out>/<track>.beats.json: tempo, beats, downbeats, per-bar loudness. Prints a section map per track.
 Beat This's own file loader needs torchcodec/soundfile, so audio is decoded with ffmpeg and fed to Audio2Beats.
 """
