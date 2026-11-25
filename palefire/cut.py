@@ -222,12 +222,38 @@ def picture(segs):
     return shots
 
 
-def sharpness(path, t, dur, rot):
+def crop_x(cx):
+    """ffmpeg crop x that puts source point cx (0-1 across the filled frame) in the middle, kept inside the picture."""
+    return f"x='max(0,min(iw-ow,{cx:.4f}*iw-ow/2))'"
+
+
+def face_cx(path, t0, t1, rot, n=5):
+    """Where the faces sit across a wide shot (0-1), for the 9:16 crop: median centre of the biggest face in n frames
+    spread over [t0, t1]. None when no face shows (the crop stays centred)."""
+    import cv2
+    xs = []
+    for k in range(n):
+        t = t0 + (t1 - t0) * (k + 0.5) / n
+        raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{t:.3f}", "-i", path, "-frames:v", "1",
+                              "-vf", f"{TURN[rot]},scale=640:-2,format=bgr24", "-f", "rawvideo", "-"],
+                             capture_output=True, check=True).stdout
+        h = len(raw) // (640 * 3)
+        if not h:
+            continue
+        det = cv2.FaceDetectorYN.create(str(media.WORK_ROOT / "models" / "yunet.onnx"), "", (640, h), 0.6)
+        found = det.detect(np.frombuffer(raw, np.uint8)[: h * 640 * 3].reshape(h, 640, 3).copy())[1]
+        if found is not None:
+            x, _, w, fh = max(found[:, :4].tolist(), key=lambda f: f[2] * f[3])
+            xs.append((x + w / 2) / 640)
+    return float(np.median(xs)) if xs else None
+
+
+def sharpness(path, t, dur, rot, cx=0.5):
     """Per-frame sharpness (Laplacian variance on a 270x480 gray copy). Camera shake shows up as motion blur:
     calibrated on the Basye shoot, where Avery's "too shaky" shot measured 11 against 85-165 for clean shots."""
     w, h = 270, 480
     raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{t:.3f}", "-t", f"{dur:.3f}", "-i", path,
-                          "-vf", f"{TURN[rot]},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                          "-vf", f"{TURN[rot]},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}:{crop_x(cx)},format=gray", "-f", "rawvideo", "-"],
                          capture_output=True, check=True).stdout
     f = np.frombuffer(raw, np.uint8)[: len(raw) // (w * h) * w * h].reshape(-1, h, w).astype(np.float32)
     return np.array([np.var(a[1:-1, 1:-1] * 4 - a[:-2, 1:-1] - a[2:, 1:-1] - a[1:-1, :-2] - a[1:-1, 2:]) for a in f])
@@ -237,14 +263,14 @@ EDGE = 6            # frames at each end of a shot that must be sharp and (for d
 _FACES = None
 
 
-def faces(path, t, n, rot):
+def faces(path, t, n, rot, cx=0.5):
     """[bool] per frame for n frames from t: is a face in frame (YuNet, the model nljbs reels use)."""
     global _FACES
     import cv2
     if _FACES is None:
         _FACES = cv2.FaceDetectorYN.create(str(media.WORK_ROOT / "models" / "yunet.onnx"), "", (270, 480), 0.6)
     raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{max(0.0, t):.3f}", "-i", path, "-frames:v", str(n),
-                          "-vf", f"{TURN[rot]},scale=270:480:force_original_aspect_ratio=increase,crop=270:480,format=bgr24", "-f", "rawvideo", "-"],
+                          "-vf", f"{TURN[rot]},scale=270:480:force_original_aspect_ratio=increase,crop=270:480:{crop_x(cx)},format=bgr24", "-f", "rawvideo", "-"],
                          capture_output=True, check=True).stdout
     f = np.frombuffer(raw, np.uint8)[: len(raw) // (270 * 480 * 3) * 270 * 480 * 3].reshape(-1, 480, 270, 3)
     return [_FACES.detect(np.ascontiguousarray(x))[1] is not None for x in f]
@@ -256,7 +282,7 @@ def edge_checks(segs, cams):
     fail = []
     for s in segs:
         path, rot = cams[s["clip"]][0], s.get("rot", 0)
-        sh = sharpness(path, s["in_f"] / FPS, s["len"] / FPS, rot)
+        sh = sharpness(path, s["in_f"] / FPS, s["len"] / FPS, rot, s.get("cx", 0.5))
         if not len(sh):
             continue
         t, spans = 0, []
@@ -281,7 +307,7 @@ def edge_checks(segs, cams):
                                 f"around {r:.0f})")
             if s["first"] is not None and not s.get("vo"):  # dialogue: the speaker must be in frame (vo: off-camera narrator)
                 for name, lo in (("start", a), ("end", max(a, e - EDGE))):
-                    seen = faces(path, (s["in_f"] + lo) / FPS, EDGE, rot)
+                    seen = faces(path, (s["in_f"] + lo) / FPS, EDGE, rot, s.get("cx", 0.5))
                     if seen and sum(seen) < len(seen) / 2:
                         fail.append(f"{(s['start'] + lo) / FPS:6.2f}s  {s['clip']}: speaker out of frame at the {name} "
                                     f"of the shot ({sum(seen)}/{len(seen)} frames with a face)")
@@ -300,11 +326,11 @@ def checks(segs, cams):
             warn.append(f"{s['start'] / FPS:6.2f}s  {s['clip']}: cut lands {s['out'] - s['last']['t1']:+.2f}s from the "
                         f"end of \"{s['last']['w']}\"")
         # picture choices (action, react, b-roll) must be sharp: no soft shots, no motion-blurred frames
-        windows = [(s["clip"], s["inp"], s["len"] / FPS, s.get("rot", 0), s["start"])] if s["first"] is None else []
-        windows += [(w["clip"], w["src"], (w["e"] - w["a"]) / FPS, w["rot"], s["start"] + w["a"])
+        windows = [(s["clip"], s["inp"], s["len"] / FPS, s.get("rot", 0), s["start"], s.get("cx", 0.5))] if s["first"] is None else []
+        windows += [(w["clip"], w["src"], (w["e"] - w["a"]) / FPS, w["rot"], s["start"] + w["a"], w.get("cx", 0.5))
                     for w in s.get("broll_frames", [])]
-        for clip, t, dur, rot, at in windows:
-            sh = sharpness(cams[clip][0], t, dur, rot)
+        for clip, t, dur, rot, at, cx in windows:
+            sh = sharpness(cams[clip][0], t, dur, rot, cx)
             if not len(sh):
                 continue
             med = float(np.median(sh))
@@ -515,7 +541,8 @@ def template_filters(template_xml):
     return bm, al
 
 
-def bm_filter(tpl, scale, rotation=0):
+def bm_filter(tpl, scale, rotation=0, horiz=0.0, keys=None):
+    """keys: [(source frame, scale %)] for a slow zoom; horiz: centre offset as a fraction of the sequence width."""
     f = copy.deepcopy(tpl)
     for p in f.iter("parameter"):
         pid, v = p.findtext("parameterid"), p.find("value")
@@ -525,10 +552,14 @@ def bm_filter(tpl, scale, rotation=0):
             continue
         if pid == "scale":
             v.text = f"{scale:.4f}"
+            for when, sc in keys or []:
+                k = ET.SubElement(p, "keyframe")
+                ET.SubElement(k, "when").text = str(when)
+                ET.SubElement(k, "value").text = f"{sc:.4f}"
         elif pid == "rotation":
             v.text = str(rotation)
         elif pid == "center" and v.find("horiz") is not None:
-            v.find("horiz").text, v.find("vert").text = "0", "0"
+            v.find("horiz").text, v.find("vert").text = f"{horiz:.6f}", "0"
     return f
 
 
@@ -551,6 +582,18 @@ def rate_el():
     ET.SubElement(r, "timebase").text = "30"
     ET.SubElement(r, "ntsc").text = "TRUE"
     return r
+
+
+def motion(s, scale):
+    """Basic Motion for a shot: (scale %, centre offset, zoom keys). The crop centre cx lands mid-frame, clamped so
+    the picture still covers 1080 wide at the smallest scale the shot reaches."""
+    z = s.get("zoom")
+    lo = min(z) if z else scale
+    wd = s["dw"] * s["fit"] * lo / 100  # picture width in sequence pixels
+    off = max(-(wd - VW) / 2, min((wd - VW) / 2, (0.5 - s.get("cx", 0.5)) * wd))
+    f = s.get("fit", 1.0)
+    keys = [(s["in_f"], z[0] * f), (s["in_f"] + s["len"], z[1] * f)] if z else None
+    return (z[0] if z else scale) * f, off / VW, keys
 
 
 def build_xml(reel, segs, total, cams, music_path, music_info, music_at, levels, tpl, counter, title=(), caps=()):
@@ -632,7 +675,7 @@ def build_xml(reel, segs, total, cams, music_path, music_info, music_at, levels,
         path, info = cams[s["clip"]]
         inp = s["in_f"]
         v1.append(clip(f"v-{i}", s["clip"], path, info, s["start"], s["len"], inp, "video",
-                       filt=bm_filter(bm_t, seg_scale(s) * s.get("fit", 1.0), s.get("rot", 0))))
+                       filt=bm_filter(bm_t, *(lambda m: (m[0], s.get("rot", 0), m[1], m[2]))(motion(s, seg_scale(s))))))
         if s["kind"] == "react":  # Avery's voice off camera: picture only, music carries it
             continue
         a1.append(clip(f"a1-{i}", s["clip"], path, info, s["start"], s["len"], inp, "audio", track_idx=1))
@@ -643,7 +686,7 @@ def build_xml(reel, segs, total, cams, music_path, music_info, music_at, levels,
         for j, b in enumerate(s.get("broll_frames", [])):
             bpath, binfo = cams[b["clip"]]
             bl.append(clip(f"b-{i}-{j}", b["clip"], bpath, binfo, s["start"] + b["a"], b["e"] - b["a"], fr(b["src"]),
-                           "video", filt=bm_filter(bm_t, 100.0 * b["fit"], b["rot"])))
+                           "video", filt=bm_filter(bm_t, *(lambda m: (m[0], b["rot"], m[1]))(motion(dict(b, in_f=fr(b["src"]), len=b["e"] - b["a"]), 100.0)))))
     if bl:
         track(vid, bl)
     if counter:
@@ -709,8 +752,15 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
         # breaks (drops a piece's picture) when the parts disagree
         # zero each piece's timestamps and pin audio to the video length: HEVC seeks can start a frame late,
         # which drops a frame and slips sync at the concat seams
-        vf = (f"setpts=PTS-STARTPTS,{look_for(s['clip'])},{turn[s.get('rot', 0)]},scale={sw}:{sh}:force_original_aspect_ratio=increase:out_range=tv,"
-              f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p")
+        if s.get("zoom"):  # slow push: scale ramps z0 -> z1 over the shot (fill size times the zoom)
+            z0, z1 = s["zoom"]
+            bw, bh = s["dw"] * s["fit"], s["dh"] * s["fit"]
+            zt = f"({z0}+({z1}-{z0})*t/{s['len'] / FPS:.4f})/100"
+            size = f"scale=w='2*trunc({bw:.1f}*{zt}/2)':h='2*trunc({bh:.1f}*{zt}/2)':eval=frame:out_range=tv"
+        else:
+            size = f"scale={sw}:{sh}:force_original_aspect_ratio=increase:out_range=tv"
+        vf = (f"setpts=PTS-STARTPTS,{look_for(s['clip'])},{turn[s.get('rot', 0)]},{size},"
+              f"crop={VW}:{VH}:{crop_x(s.get('cx', 0.5))},setsar=1,fps=30000/1001,format=yuv420p")
         af = (f"{'volume=0' if s['kind'] == 'react' else 'anull'},asetpts=PTS-STARTPTS,"
               f"apad,atrim=duration={s['len'] / FPS:.6f}")
         part = tmp / f"seg{i:02d}.mov"
@@ -719,7 +769,7 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
             at, dur = b["a"] / FPS, (b["e"] - b["a"]) / FPS
             ins += ["-ss", f"{b['src']:.4f}", "-t", f"{dur + 0.1:.4f}", "-i", cams[b["clip"]][0]]
             fc += (f";[{k}:v]setpts=PTS-STARTPTS,{look_for(b['clip'])},{turn[b['rot']]},scale={VW}:{VH}:force_original_aspect_ratio=increase:out_range=tv,"
-                   f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p,setpts=PTS+{at:.4f}/TB[b{k}];"
+                   f"crop={VW}:{VH}:{crop_x(b.get('cx', 0.5))},setsar=1,fps=30000/1001,format=yuv420p,setpts=PTS+{at:.4f}/TB[b{k}];"
                    f"[{last}][b{k}]overlay=eof_action=pass:enable='gte(n,{b['a']})*lt(n,{b['e']})'[v{k}]")
             last = f"v{k}"
         subprocess.run([media.FFMPEG, "-v", "error", "-y", *ins, "-filter_complex", fc,
@@ -742,9 +792,9 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
     ins = ["-i", str(body), "-i", str(music_path)]
     vchain, last = "", "0:v"
     for k, (png, a, b) in enumerate(counter):
-        ins += ["-loop", "1", "-i", str(png)]
+        ins += ["-i", str(png)]  # one frame, held by eof_action=repeat: a looped input re-decodes the PNG every frame
         lab = f"v{k}"
-        vchain += (f"[{last}][{k + 2}:v]overlay=0:0:shortest=1:"
+        vchain += (f"[{last}][{k + 2}:v]overlay=0:0:eof_action=repeat:"
                    f"enable='between(t,{a / FPS:.4f},{b / FPS - 0.001:.4f})'[{lab}];")
         last = lab
     fc = (vchain +
@@ -787,10 +837,18 @@ def run(plan_yaml, ids=None, preview=False):
             fit scales Basic Motion so the rotated frame fills 1080x1920 (1.0 for 1080p, 0.5 for 4K)."""
             rot = int(cfg.get("rotate", 0))
             v = cams[clip][1]["video"]
-            if not rot:  # horizontal or rotation-tagged footage: fill the frame, centre crop (as the preview does)
-                w, h = (v["height"], v["width"]) if abs(v.get("rotation", 0)) % 180 == 90 else (v["width"], v["height"])
-                return 0, max(VW / w, VH / h)
-            return rot, VH / (v["width"] if rot in (90, -90) else v["height"])
+            w, h = (v["height"], v["width"]) if abs(v.get("rotation", 0)) % 180 == 90 else (v["width"], v["height"])
+            if rot in (90, -90):
+                w, h = h, w
+            return dict(rot=rot, fit=max(VW / w, VH / h), dw=w, dh=h)  # dw x dh: the frame as it plays, before fit
+
+        def centre(d, clip, t0, t1):
+            """x: crop centre (0-1) from the plan; else wide shots crop on the faces, centred when there are none."""
+            if "x" in d:
+                d["cx"] = float(d.pop("x"))
+            elif d["dw"] / d["dh"] > VW / VH + 0.01:
+                d["cx"] = face_cx(cams[clip][0], t0, t1, d["rot"]) or 0.5
+            return d
 
         levels = {}
         for s in segs:
@@ -798,10 +856,12 @@ def run(plan_yaml, ids=None, preview=False):
                 x = media.extract_audio(cams[s["clip"]][0], work / "audio", sr=ASR_SR)
                 levels[s["clip"]] = band_levels(x)
             resolve(s, words[s["clip"]], cams[s["clip"]][1]["duration"], levels[s["clip"]])
-            s["rot"], s["fit"] = geom(s["clip"])
-            # broll: [[clip, source s, at s into this segment, dur s]] cutaways over this segment's audio
-            s["broll_items"] = [dict(clip=c, src=float(t), at=float(at), dur=float(d), rot=geom(c)[0], fit=geom(c)[1])
-                                for c, t, at, d in s.get("broll", [])]
+            s.update(geom(s["clip"]))
+            centre(s, s["clip"], s["inp"], s["out"])
+            # broll: [[clip, source s, at s into this segment, dur s, (crop centre x)]] cutaways over this segment's audio
+            s["broll_items"] = [centre(dict(clip=c, src=float(t), at=float(at), dur=float(d), **geom(c), **({"x": x[0]} if x else {})),
+                                       c, float(t), float(t) + float(d))
+                                for c, t, at, d, *x in s.get("broll", [])]
         music_path = shoot / "music" / reel["music"]
         beats_path = work / "music" / (Path(reel["music"]).stem + ".beats.json")
         if not music_path.exists():  # not in the shoot folder: take it from the shared library (palefire music)
