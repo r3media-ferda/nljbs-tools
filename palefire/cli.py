@@ -45,6 +45,8 @@ def main():
     s.add_argument("plan", help="shoots/<date>.yaml, or one or more finished .mp4 files")
     s.add_argument("ids", nargs="*", help="reel ids (default all), or more .mp4 files")
     s.add_argument("--out", help="where MP4 inputs' _SOCIAL files go (default ~/r3-work/social)")
+    s.add_argument("--instagram", action="store_true",
+                   help="Instagram only: allow up to 15 min (Facebook Reels stop at 90 s)")
 
     v = sub.add_parser("serve", help="short-lived public links (Cloudflare quick tunnel) for Rella to import videos")
     v.add_argument("files", nargs="+")
@@ -68,6 +70,8 @@ def main():
         return
     if a.cmd == "social":
         from . import social
+        if a.instagram:
+            social.SPEC["dur"] = (3.0, 900.0)
         if a.plan.lower().endswith(".mp4"):
             social.run_files([a.plan] + a.ids, a.out)
         else:

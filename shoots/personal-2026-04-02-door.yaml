@@ -1,4 +1,6 @@
 # Personal vlog, Apr 2 2026: Home Depot run and painting the R3 studio door. Built by `palefire cut <this> [--preview]`.
+# v3 (Avery, 2026-11-24): one cutaway to Hoov drinking in the first office line; the door backstory is out (its
+# b-roll wasn't the door), straight from the office to Home Depot. Instagram only (`palefire social --instagram`).
 # v2 (Avery, 2026-11-24): office cut between Avery and Jordan (mostly Avery, slow push on Jordan), every wide shot
 # cropped on the faces, more Home Depot banter, longer "welcome to America", shorter drive, Oz's closer whole.
 # v1 (2026-11-24). Canon 4K horizontal plus two iPhone clips, cropped to 9:16.
@@ -22,7 +24,7 @@ reels:
   - id: AL_0402_door
     title: Paint day at R3
     music: ES_Oh What A Whirl - Jules Gaia.mp3   # playful-quirky, 111 BPM, break at 130.9 s
-    payoff: 25                                   # the painting starts on the track's break
+    payoff: 23                                   # the painting starts on the track's break
     break_at: 130.9
     title_card: {text: PAINT DAY AT R3, until: 2}
     segments:
@@ -30,14 +32,11 @@ reels:
       - [IMG_0250,  4.80,  6.86, talk,                      # I need to get better about filming my day.
          {broll: [[IMG_0250, 1.3, 0.0, 1.15]]}]             #   first take over the opening word: the phone swings into place until 5.7 s
       # --- office: Avery, then Jordan
-      - [093A2148,  4.24,  9.57, talk]                      # I'm editing a few more things for the Dayton market before we start to paint the door.
+      - [093A2148,  4.24,  9.57, talk,                      # I'm editing a few more things for the Dayton market before we start to paint the door.
+         {broll: [[093A2148, 6.4, 2.36, 2.0, 0.45]]}]       #   Hoov drinking, same take (stays in sync)
       - [093A2148, 10.80, 12.86, punch]                     # And we'll take you all along on that journey too.
       - [093A2148, 13.36, 16.52, talk, {vo: true}]          # Hoovie, anything to say to the people of the world?
       - [093A2148, 17.52, 20.03, talk, {zoom: [100, 118]}]  # Not really. This Coke is really good though.   (Jordan, slow push)
-      - [093A2149, 112.89, 115.42, talk]                    # Alright, so here is said door.   (the camera swings away after this)
-      - [093A2149, 135.90, 140.08, talk,                    # This door, this wall at one point, was full of names and history.
-         {broll: [[093A2184, 0.5, 1.4, 0.9, 0.5],           #   the old signed whiteboard wall (sharp for under a second)
-                  [093A2184, 6.0, 2.3, 2.5]]}]              #   then the room by the door (Avery's own shot blurs here)
       - [093A2149, 48.76, 53.83, talk]                      # About to head to Home Depot. And go get some paint for the door.
       # --- drive (car stereo muted)
       - [093A2154,  1.0,  1.8, react]

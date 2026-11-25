@@ -123,7 +123,7 @@ def check(path):
     elif a["codec_name"] != "aac" or int(a["sample_rate"]) != 48000 or int(a.get("bit_rate", 0)) > 135_000:
         bad.append(f"audio {a['codec_name']} {a['sample_rate']} Hz {int(a.get('bit_rate', 0)) // 1000} kbps")
     if not SPEC["dur"][0] <= dur <= SPEC["dur"][1]:
-        bad.append(f"{dur:.1f} s (Facebook Reels take 3-90 s)")
+        bad.append(f"{dur:.1f} s (allowed {SPEC['dur'][0]:.0f}-{SPEC['dur'][1]:.0f} s)")
     if size > SPEC["size_max"]:
         bad.append(f"{size / 1e6:.0f} MB (Instagram cap 300 MB)")
     with open(path, "rb") as f:  # moov before mdat: plays before it finishes downloading
@@ -145,7 +145,7 @@ def _report(src, dst):
     bad, st = check(dst)
     print(f"{dst.name}: {st['dur']:.1f} s, {st['mb']:.0f} MB, video {st['vmbps']:.1f} Mbps, "
           f"audio {before['I']:.1f} -> {st['lufs']:.1f} LUFS, peak {st['tp']:+.1f} dBTP  "
-          + ("OK for Instagram + Facebook Reels" if not bad else "PROBLEMS: " + "; ".join(bad)))
+          + (("OK for Instagram + Facebook Reels" if st["dur"] <= 90 else "OK for Instagram Reels (too long for Facebook)") if not bad else "PROBLEMS: " + "; ".join(bad)))
     return not bad
 
 
