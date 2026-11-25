@@ -1,0 +1,50 @@
+# Personal vlog, Apr 2 2026: Home Depot run and painting the R3 studio door. Built by `palefire cut <this> [--preview]`.
+# v1 (2026-11-24). Canon R-series 4K horizontal plus two iPhone clips, centre-cropped to 9:16.
+# Most lines are Avery narrating from behind the camera, so they carry `vo: true` (skips the face-in-frame check only).
+# The drive clips have the car stereo playing, so they go in as `react` (camera audio muted).
+#
+# Segments: [clip stem, a, b, kind, (scale % or {options})]. kinds: talk, punch (115%), action, react, end.
+
+shoot: /Users/averyleavitt/r3-work/personal/painting_door_day/shoot   # "RAW VIDEO" in here links to the SSD folder (read only)
+work: ~/r3-work/personal/painting_door_day
+lut: none          # standard color, 8-bit: no cube
+finish: "null"
+template_xml: /Volumes/Extreme SSD/R3 Media/PALE FIRE/2026/VIDEO AUTOMATION /STIENHOLDING.xml
+music_db: {talk: -20, punch: -20, action: -10, react: -8, end: -10}
+snap_window: 0.30
+
+reels:
+  - id: AL_0402_door
+    title: Paint day at R3
+    music: ES_Dustyfied - Dusty Decks.mp3   # playful-quirky, 93.8 BPM, break at 78.3 s
+    payoff: 14                              # the painting starts on the track's break
+    break_at: 78.3
+    title_card: {text: PAINT DAY AT R3, until: 2}
+    segments:
+      - [IMG_0250,  4.80,  6.86, talk,                      # I need to get better about filming my day.
+         {broll: [[IMG_0250, 1.3, 0.0, 1.15]]}]             #   first take over the opening word: the phone swings into place until 5.7 s
+      - [093A2148,  4.24,  9.57, talk, {vo: true}]          # I'm editing a few more things for the Dayton market before we start to paint the door.
+      - [093A2148, 10.80, 12.86, punch, {vo: true}]         # And we'll take you all along on that journey too.
+      - [093A2151, 32.19, 33.51, talk, {vo: true,           # on the way to Home Depot.
+         broll: [[093A2154, 1.0, 0.0, 1.6]]}]               #   road and traffic light (the clip itself is all dashboard)
+      - [093A2161, 12.0, 13.5, react]                       # highway
+      - [093A2163, 15.5, 17.0, react]                       # Home Depot sign from the car
+      - [093A2166, 10.48, 11.50, talk, {vo: true,           # Now we are at Home Depot.
+         broll: [[093A2166, 12.0, 0.0, 1.2]]}]              #   Avery under the sign (the line itself is a whip pan)
+      - [093A2168,  0.8,  2.6, action]                      # walking the aisles
+      - [093A2167,  3.5,  5.0, action]                      # cart, looking back
+      - [093A2169,  2.48,  9.45, talk, {vo: true,           # Drop cloth found. Copper hammered, black hammered, or silver hammered?
+         broll: [[093A2170, 1.0, 0.0, 2.6]]}]               #   aisle shot over "drop cloth found", then the cans
+      - [093A2169, 13.04, 15.38, punch, {vo: true}]         # I think I'm just getting hammered in general.
+      - [093A2172,  2.0,  3.4, action]                      # cart POV, chalkboard paint
+      - [093A2177,  2.08,  4.31, talk, {vo: true}]          # Welcome to America. Where are we?
+      - [093A2183, 42.0, 43.5, react]                       # drive back
+      - [093A2185, 15.6, 17.4, action]                      # hands taping the hinge   (payoff: on the break)
+      - [093A2186,  2.6,  4.4, action]                      # roller close-up
+      - [093A2186, 15.6, 17.4, action]                      # painting the door
+      - [093A2187, 100.0, 101.2, react]                     # locked-off door, jump cuts through the afternoon: crew at the door
+      - [093A2187, 300.0, 301.2, react]
+      - [093A2187, 400.0, 401.6, react]                     # door painted, nobody left
+      - [IMG_0254,  0.3,  4.7, react]                       # R3 on the door
+      - [093A2188,  0.56,  8.30, talk, {vo: true}]          # What's up? I just walked around this random building and found this really cool studio...
+      - [093A2188, 10.56, 13.22, punch, {vo: true}]         # Y'all should really check this place out. It's called R3 Studios.

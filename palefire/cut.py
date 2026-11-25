@@ -227,7 +227,7 @@ def sharpness(path, t, dur, rot):
     calibrated on the Basye shoot, where Avery's "too shaky" shot measured 11 against 85-165 for clean shots."""
     w, h = 270, 480
     raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{t:.3f}", "-t", f"{dur:.3f}", "-i", path,
-                          "-vf", f"{TURN[rot]},scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                          "-vf", f"{TURN[rot]},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},format=gray", "-f", "rawvideo", "-"],
                          capture_output=True, check=True).stdout
     f = np.frombuffer(raw, np.uint8)[: len(raw) // (w * h) * w * h].reshape(-1, h, w).astype(np.float32)
     return np.array([np.var(a[1:-1, 1:-1] * 4 - a[:-2, 1:-1] - a[2:, 1:-1] - a[1:-1, :-2] - a[1:-1, 2:]) for a in f])
@@ -244,7 +244,7 @@ def faces(path, t, n, rot):
     if _FACES is None:
         _FACES = cv2.FaceDetectorYN.create(str(media.WORK_ROOT / "models" / "yunet.onnx"), "", (270, 480), 0.6)
     raw = subprocess.run([media.FFMPEG, "-v", "error", "-ss", f"{max(0.0, t):.3f}", "-i", path, "-frames:v", str(n),
-                          "-vf", f"{TURN[rot]},scale=270:480,format=bgr24", "-f", "rawvideo", "-"],
+                          "-vf", f"{TURN[rot]},scale=270:480:force_original_aspect_ratio=increase,crop=270:480,format=bgr24", "-f", "rawvideo", "-"],
                          capture_output=True, check=True).stdout
     f = np.frombuffer(raw, np.uint8)[: len(raw) // (270 * 480 * 3) * 270 * 480 * 3].reshape(-1, 480, 270, 3)
     return [_FACES.detect(np.ascontiguousarray(x))[1] is not None for x in f]
@@ -279,7 +279,7 @@ def edge_checks(segs, cams):
                     fail.append(f"{(s['start'] + lo) / FPS:6.2f}s  {s['clip']} @ {(s['in_f'] + lo) / FPS:.2f}s: {dips} blurred "
                                 f"frames at the {name} of the shot (edge {' '.join(f'{v:.0f}' for v in sh[lo:hi])}, "
                                 f"around {r:.0f})")
-            if s["first"] is not None:  # dialogue: the speaker must be in frame through the edges
+            if s["first"] is not None and not s.get("vo"):  # dialogue: the speaker must be in frame (vo: off-camera narrator)
                 for name, lo in (("start", a), ("end", max(a, e - EDGE))):
                     seen = faces(path, (s["in_f"] + lo) / FPS, EDGE, rot)
                     if seen and sum(seen) < len(seen) / 2:
@@ -705,9 +705,11 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
         path, _ = cams[s["clip"]]
         scale = seg_scale(s) / 100
         sw, sh = int(round(VW * scale / 2) * 2), int(round(VH * scale / 2) * 2)
+        # every piece leaves in TV range: Canon MP4s are full range, iPhone TV, and the stream-copy concat below
+        # breaks (drops a piece's picture) when the parts disagree
         # zero each piece's timestamps and pin audio to the video length: HEVC seeks can start a frame late,
         # which drops a frame and slips sync at the concat seams
-        vf = (f"setpts=PTS-STARTPTS,{look_for(s['clip'])},{turn[s.get('rot', 0)]},scale={sw}:{sh},"
+        vf = (f"setpts=PTS-STARTPTS,{look_for(s['clip'])},{turn[s.get('rot', 0)]},scale={sw}:{sh}:force_original_aspect_ratio=increase:out_range=tv,"
               f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p")
         af = (f"{'volume=0' if s['kind'] == 'react' else 'anull'},asetpts=PTS-STARTPTS,"
               f"apad,atrim=duration={s['len'] / FPS:.6f}")
@@ -716,7 +718,7 @@ def render_preview(segs, cams, music_path, music_at, keys, total, cfg, counter, 
         for k, b in enumerate(s.get("broll_frames", []), 1):  # cutaway: b-roll picture over this segment's audio
             at, dur = b["a"] / FPS, (b["e"] - b["a"]) / FPS
             ins += ["-ss", f"{b['src']:.4f}", "-t", f"{dur + 0.1:.4f}", "-i", cams[b["clip"]][0]]
-            fc += (f";[{k}:v]setpts=PTS-STARTPTS,{look_for(b['clip'])},{turn[b['rot']]},scale={VW}:{VH},"
+            fc += (f";[{k}:v]setpts=PTS-STARTPTS,{look_for(b['clip'])},{turn[b['rot']]},scale={VW}:{VH}:force_original_aspect_ratio=increase:out_range=tv,"
                    f"crop={VW}:{VH},setsar=1,fps=30000/1001,format=yuv420p,setpts=PTS+{at:.4f}/TB[b{k}];"
                    f"[{last}][b{k}]overlay=eof_action=pass:enable='gte(n,{b['a']})*lt(n,{b['e']})'[v{k}]")
             last = f"v{k}"
@@ -784,9 +786,10 @@ def run(plan_yaml, ids=None, preview=False):
             """rotate: Premiere degrees for footage shot vertical without a rotation tag (-90 = counter-clockwise).
             fit scales Basic Motion so the rotated frame fills 1080x1920 (1.0 for 1080p, 0.5 for 4K)."""
             rot = int(cfg.get("rotate", 0))
-            if not rot:
-                return 0, 1.0
             v = cams[clip][1]["video"]
+            if not rot:  # horizontal or rotation-tagged footage: fill the frame, centre crop (as the preview does)
+                w, h = (v["height"], v["width"]) if abs(v.get("rotation", 0)) % 180 == 90 else (v["width"], v["height"])
+                return 0, max(VW / w, VH / h)
             return rot, VH / (v["width"] if rot in (90, -90) else v["height"])
 
         levels = {}
@@ -795,8 +798,7 @@ def run(plan_yaml, ids=None, preview=False):
                 x = media.extract_audio(cams[s["clip"]][0], work / "audio", sr=ASR_SR)
                 levels[s["clip"]] = band_levels(x)
             resolve(s, words[s["clip"]], cams[s["clip"]][1]["duration"], levels[s["clip"]])
-            if cfg.get("rotate"):
-                s["rot"], s["fit"] = geom(s["clip"])
+            s["rot"], s["fit"] = geom(s["clip"])
             # broll: [[clip, source s, at s into this segment, dur s]] cutaways over this segment's audio
             s["broll_items"] = [dict(clip=c, src=float(t), at=float(at), dur=float(d), rot=geom(c)[0], fit=geom(c)[1])
                                 for c, t, at, d in s.get("broll", [])]

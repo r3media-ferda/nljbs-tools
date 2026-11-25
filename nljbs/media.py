@@ -44,6 +44,7 @@ def summarize(path):
                 "color_primaries": st.get("color_primaries"),
                 "color_transfer": st.get("color_transfer"),
                 "color_space": st.get("color_space"),
+                "rotation": int(next((d["rotation"] for d in st.get("side_data_list", []) if "rotation" in d), 0)),
             }
         if st.get("codec_type") == "audio" and "audio" not in s:
             s["audio"] = {
