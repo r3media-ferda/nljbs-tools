@@ -66,6 +66,16 @@ Work files live in `~/r3-work/palefire/<slug>/`. Style rules: `docs/R3_SHORT_FOR
 
 Order: `probe` -> `transcribe` + `beats` -> write `shoots/<date>.yaml` -> `cut --preview` -> Avery reviews -> `<id>_FINAL.mp4` -> `social` -> Rella draft as PENDING, `serve`, attach -> the client's reviewer approves; people schedule and turn on auto-publish. Save each reel's caption and Rella content ID in its shoot plan.
 
+## Reading footage cheaply
+
+Every image read stays in context and gets re-sent on each later turn (about 190 times on average before compaction), so read text first and open images second.
+
+- Frames, reels, contact sheets: run `.venv/bin/python scripts/frame_summary.py VIDEO_OR_FRAME_DIR` and read `summary.md` first. It lists luma, sharpness, faces and on-screen text per frame (Apple Vision, local), flags (dark/blown/soft/no-face/dup), and votes on IG handles across frames. Open `sheet.jpg` or `flagged.jpg` only when the text isn't enough, and never more than those two.
+- Handles: the vote is a lead. Before a handle goes into public text, confirm it from one tight crop of the screen (a strip, not a full frame).
+- Transcripts: run `.venv/bin/python scripts/transcript_outline.py words.json` and read the outline (about 1.2k tokens for 30 min). Use `--find "phrase"` for exact word times. Don't read `words.json` or `transcript.txt` whole.
+- Logs: read the last 20 lines of pipeline output or the `_report.txt`, not the full run.
+- Source and docs: `grep -n` then `sed -n` the range you need, not `cat` of the whole file.
+
 ## Validation
 
 R80 AVE14202: hand-built offset -40.9585 s, `measure()` gives -40.9561 s mid-run, drift 9.6 ms. Re-run this when changing `sync.py`.
